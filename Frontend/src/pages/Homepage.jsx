@@ -65,8 +65,18 @@ export default function Homepage() {
               response agencies.
             </p>
             <div className="hero-buttons">
-              <button className="btn btn-primary">Start Analysis</button>
-              <button className="btn btn-secondary">Learn More</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate("/analyze")}
+              >
+                Start Analysis
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => navigate("/learn")}
+              >
+                Learn More
+              </button>
             </div>
           </div>
         </div>

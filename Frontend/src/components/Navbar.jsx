@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import "./Navbar.css";
+import mainLogo from "../assets/main-logo.png";
 
 export default function Navbar() {
   const [theme, setTheme] = useState(() => {
@@ -112,9 +113,14 @@ export default function Navbar() {
     <header>
       <nav className="navbar">
         <div className="navbar-container">
-          <div className="navbar-logo">
+          <Link to="/" className="navbar-logo">
+            <img
+              src={mainLogo}
+              alt="Floods Insights Logo"
+              className="logo-image"
+            />
             <span className="logo-text">Floods Insights</span>
-          </div>
+          </Link>
 
           <ul
             className={`navbar-links ${isMobileMenuOpen ? "mobile-open" : ""}`}

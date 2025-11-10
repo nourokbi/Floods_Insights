@@ -349,13 +349,14 @@
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
 }
 
-.stats-grid {
+.stats .stats-grid {
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 3rem;
+  gap: 1rem;
 }
 
-.stat-item {
+.stats .stat-item {
   text-align: center;
   color: white;
   padding: 2rem 1rem;
@@ -370,13 +371,13 @@
   gap: 1rem;
 }
 
-.stat-item:hover {
+.stats .stat-item:hover {
   transform: translateY(-10px);
   background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-.stat-icon {
+.stats .stat-icon {
   width: 72px;
   height: 72px;
   display: flex;
@@ -389,12 +390,12 @@
   transition: all 0.3s ease;
 }
 
-.stat-item:hover .stat-icon {
+.stats .stat-item:hover .stat-icon {
   transform: scale(1.1) rotate(5deg);
   background: rgba(255, 255, 255, 0.3);
 }
 
-.stat-number {
+.stats .stat-number {
   font-size: 3rem;
   font-weight: 800;
   margin: 0;
@@ -402,7 +403,7 @@
   line-height: 1;
 }
 
-.stat-label {
+.stats .stat-label {
   font-size: 1.125rem;
   margin: 0;
   opacity: 0.95;
@@ -653,25 +654,25 @@
     max-width: 280px;
   }
 
-  .stats-grid {
+  .stats .stats-grid {
     gap: 1.5rem;
   }
 
-  .stat-item {
+  .stats .stat-item {
     padding: 1.5rem 1rem;
   }
 
-  .stat-icon {
+  .stats .stat-icon {
     width: 64px;
     height: 64px;
   }
 
-  .stat-icon svg {
+  .stats .stat-icon svg {
     width: 40px;
     height: 40px;
   }
 
-  .stat-number {
+  .stats .stat-number {
     font-size: 2.5rem;
   }
 
@@ -776,30 +777,30 @@
     max-width: 250px;
   }
 
-  .stats-grid {
+  .stats .stats-grid {
     grid-template-columns: 1fr;
     gap: 1.25rem;
   }
 
-  .stat-item {
+  .stats .stat-item {
     padding: 1.25rem 1rem;
   }
 
-  .stat-icon {
+  .stats .stat-icon {
     width: 56px;
     height: 56px;
   }
 
-  .stat-icon svg {
+  .stats .stat-icon svg {
     width: 36px;
     height: 36px;
   }
 
-  .stat-number {
+  .stats .stat-number {
     font-size: 2.25rem;
   }
 
-  .stat-label {
+  .stats .stat-label {
     font-size: 1rem;
   }
 
@@ -835,16 +836,16 @@
     max-width: 200px;
   }
 
-  .stat-item {
+  .stats .stat-item {
     padding: 1rem 0.75rem;
   }
 
-  .stat-icon {
+  .stats .stat-icon {
     width: 48px;
     height: 48px;
   }
 
-  .stat-icon svg {
+  .stats .stat-icon svg {
     width: 32px;
     height: 32px;
   }
