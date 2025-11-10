@@ -14,7 +14,6 @@ import ClockIcon from "./icons/ClockIcon";
 export default function Homepage() {
   return (
     <div className="homepage">
-      {/* Hero Section with Background Image */}
       <section
         className="hero"
         style={{ backgroundImage: `url(${heroImage})` }}
@@ -22,13 +21,6 @@ export default function Homepage() {
         <div className="hero-overlay"></div>
         <div className="hero-container">
           <div className="hero-content">
-            <div className="hero-logo">
-              <img
-                src={logo}
-                alt="Floods Insights"
-                className="hero-logo-image"
-              />
-            </div>
             <h1 className="hero-title">
               Predicting Natural Disasters,
               <span className="gradient-text"> Protecting Lives</span>
@@ -47,7 +39,6 @@ export default function Homepage() {
         </div>
       </section>
 
-      {/* Features Section with Background Image */}
       <section
         className="features"
         style={{ backgroundImage: `url(${featuresImage})` }}
