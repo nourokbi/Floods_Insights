@@ -73,7 +73,7 @@ export default function Homepage() {
               </button>
               <button
                 className="btn btn-secondary"
-                onClick={() => navigate("/learn")}
+                onClick={() => navigate("/community")}
               >
                 Learn More
               </button>

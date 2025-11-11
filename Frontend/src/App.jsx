@@ -8,6 +8,7 @@ import Community from "./pages/Community";
 import About from "./pages/About";
 import Saved from "./pages/Saved";
 import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="about" element={<About />} />
           <Route path="saved" element={<Saved />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>
