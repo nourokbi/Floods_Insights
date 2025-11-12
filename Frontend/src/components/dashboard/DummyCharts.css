@@ -100,7 +100,8 @@
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 999px) {
+  /* --- CHANGED FROM 1024px --- */
   .dummy-charts-container {
     flex-direction: column;
     gap: 12px;
@@ -109,13 +110,14 @@
 
   .chart-wrapper {
     flex: 1;
-    max-height: 50%;
+    min-height: 420px; /* Ensure enough height when stacked */
   }
 }
 
 @media (max-width: 768px) {
   .chart-wrapper {
     padding: 0.5rem;
+    min-height: 440px; /* Slightly taller on very small screens */
   }
 
   .chart-title {

@@ -278,7 +278,69 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
+  /* Make cards more compact and two per row when space allows */
+  .info-sidebar {
+    padding: 16px;
+  }
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .stat-card {
+    padding: 0.75rem;
+  }
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+  /* Quick info items in two columns for compactness */
+  .status-items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  /* Make Recent Alerts more compact under 1200px */
+  .alerts-section {
+    padding: 0.75rem;
+  }
+  .alerts-list {
+    gap: 0.5rem;
+  }
+  .alert-item {
+    padding: 0.5rem;
+  }
+  .alert-header {
+    margin-bottom: 0.25rem;
+  }
+  .alert-region {
+    font-size: 0.8125rem;
+  }
+  .alert-badge {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Keep compact layout like <=1200px to reduce sizes */
+  .info-sidebar {
+    padding: 14px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .stat-card {
+    padding: 0.6rem;
+  }
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .status-items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
   }
 }

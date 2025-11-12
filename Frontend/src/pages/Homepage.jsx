@@ -4,14 +4,16 @@ import "./Homepage.css";
 import heroImage from "../assets/1.jpg";
 import featuresImage from "../assets/2.jpg";
 import logo from "../assets/logo.png";
-import EarthquakeIcon from "../components/icons/EarthquakeIcon";
-import FloodIcon from "../components/icons/FloodIcon";
-import ReportIcon from "../components/icons/ReportIcon";
-import AgencyIcon from "../components/icons/AgencyIcon";
 import StatsIllustration from "../components/icons/StatsIllustration";
-import BoxIcon from "../components/icons/BoxIcon";
-import CheckCircleIcon from "../components/icons/CheckCircleIcon";
-import ClockIcon from "../components/icons/ClockIcon";
+import {
+  Activity,
+  Waves,
+  FileText,
+  Users,
+  Package,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 
 export default function Homepage() {
   const observerRef = useRef(null);
@@ -96,7 +98,7 @@ export default function Homepage() {
           <div className="features-grid">
             <div className="feature-card animate-on-scroll">
               <div className="feature-icon earthquake">
-                <EarthquakeIcon />
+                <Activity size={32} />
               </div>
               <h3 className="feature-title">Earthquake Analysis</h3>
               <p className="feature-description">
@@ -108,7 +110,7 @@ export default function Homepage() {
 
             <div className="feature-card animate-on-scroll">
               <div className="feature-icon flood">
-                <FloodIcon />
+                <Waves size={32} />
               </div>
               <h3 className="feature-title">Flood Risk Mapping</h3>
               <p className="feature-description">
@@ -119,7 +121,7 @@ export default function Homepage() {
 
             <div className="feature-card animate-on-scroll">
               <div className="feature-icon report">
-                <ReportIcon />
+                <FileText size={32} />
               </div>
               <h3 className="feature-title">PDF Reports</h3>
               <p className="feature-description">
@@ -130,7 +132,7 @@ export default function Homepage() {
 
             <div className="feature-card animate-on-scroll">
               <div className="feature-icon agencies">
-                <AgencyIcon />
+                <Users size={32} />
               </div>
               <h3 className="feature-title">Agency Coordination</h3>
               <p className="feature-description">
@@ -156,7 +158,7 @@ export default function Homepage() {
           <div className="stats-grid animate-on-scroll">
             <div className="stat-item">
               <div className="stat-icon">
-                <BoxIcon />
+                <Package size={32} />
               </div>
               <h3 className="stat-number">10K+</h3>
               <p className="stat-label">Areas Analyzed</p>
@@ -164,7 +166,7 @@ export default function Homepage() {
 
             <div className="stat-item">
               <div className="stat-icon">
-                <ReportIcon />
+                <FileText size={32} />
               </div>
               <h3 className="stat-number">500+</h3>
               <p className="stat-label">Reports Generated</p>
@@ -172,7 +174,7 @@ export default function Homepage() {
 
             <div className="stat-item">
               <div className="stat-icon">
-                <CheckCircleIcon />
+                <CheckCircle size={32} />
               </div>
               <h3 className="stat-number">98%</h3>
               <p className="stat-label">Accuracy Rate</p>
@@ -180,7 +182,7 @@ export default function Homepage() {
 
             <div className="stat-item">
               <div className="stat-icon">
-                <ClockIcon />
+                <Clock size={32} />
               </div>
               <h3 className="stat-number">24/7</h3>
               <p className="stat-label">Monitoring</p>

@@ -5,6 +5,18 @@
   position: relative;
 }
 
+/* Ensure ArcGIS widgets are visible */
+.esri-ui-corner {
+  z-index: 1;
+}
+
+.esri-zoom,
+.esri-home,
+.esri-scale-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* Touch-friendly styles for mobile */
 .esri-view .esri-view-surface--inset-outline:focus::after {
   outline: none;

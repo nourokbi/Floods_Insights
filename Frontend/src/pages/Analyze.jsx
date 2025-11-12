@@ -13,8 +13,8 @@ function Analyze() {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedYear, setSelectedYear] = useState(2022);
   const [isLoadingCountries, setIsLoadingCountries] = useState(true);
+  const [selectedPoint, setSelectedPoint] = useState(null);
 
-  // Load all countries when the map is ready
   useEffect(() => {
     if (dataLayer && mapView) {
       const loadCountries = async () => {
@@ -32,12 +32,23 @@ function Analyze() {
     }
   }, [dataLayer, mapView]);
 
+  // Handle point selection from map
+  const handlePointSelect = (coordinates) => {
+    setSelectedPoint(coordinates);
+    console.log("Selected point for analysis:", coordinates);
+    console.log(
+      `Latitude: ${coordinates.latitude}, Longitude: ${coordinates.longitude}`
+    );
+    // TODO: Call your API here with coordinates.latitude and coordinates.longitude
+    // Example: fetchAnalysisData(coordinates.latitude, coordinates.longitude);
+  };
+
   return (
     <div className="analyze-page">
       <div className="dashboard-container">
         {/* Left Sidebar - Info & Stats */}
         <div className="left-sidebar-section">
-          <InfoSidebar />
+          <InfoSidebar selectedPoint={selectedPoint} />
         </div>
 
         {/* Main Map Area */}
@@ -47,6 +58,7 @@ function Analyze() {
               setDataLayer(layer);
               setMapView(view);
             }}
+            onPointSelect={handlePointSelect}
             selectedYear={selectedYear}
           />
         </div>

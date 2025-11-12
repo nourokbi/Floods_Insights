@@ -1,31 +1,38 @@
 .analyze-page {
   width: 100%;
-  height: calc(100vh - 70px); /* Account for navbar height */
-  overflow: hidden;
+  min-height: calc(100vh - 70px); /* Account for navbar height */
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--section-bg);
   position: relative;
 }
 
 .dashboard-container {
   width: 100%;
-  height: 100%;
+
+  /* --- FIX: Replaced 'min-height: 100%' --- */
+  /* This makes the dashboard fill the parent's height */
+  height: calc(100vh - 70px);
+
   display: grid;
   grid-template-columns: 340px 1fr 380px;
+
+  /* --- FIX: Replaced '600px 350px' --- */
+  /* '1fr' lets the map row grow to fill the screen */
   grid-template-rows: 1fr 350px;
+
   grid-template-areas:
     "left-sidebar map right-sidebar"
     "left-sidebar charts right-sidebar";
   gap: 0;
-  overflow: hidden;
   position: relative;
-  max-height: 100%;
 }
 
 /* Left Sidebar - Info & Stats */
 .left-sidebar-section {
   grid-area: left-sidebar;
   position: relative;
-  overflow-y: auto;
+  overflow-y: auto; /* This is correct for desktop */
   overflow-x: hidden;
   background: var(--section-bg);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
@@ -43,13 +50,16 @@
   overflow: hidden;
   background: var(--section-bg);
   border-bottom: 1px solid var(--border-color);
+
+  /* --- FIX: Removed 'min-height: 600px' --- */
+  /* It's no longer needed with the '1fr' row */
 }
 
 /* Right Sidebar - Search & Controls */
 .right-sidebar-section {
   grid-area: right-sidebar;
   position: relative;
-  overflow-y: auto;
+  overflow-y: auto; /* This is correct for desktop */
   overflow-x: hidden;
   background: var(--section-bg);
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
@@ -70,59 +80,106 @@
   padding: 0px;
 }
 
-/* Responsive Layouts */
+/* * =========================================
+ * RESPONSIVE LAYOUTS
+ * =========================================
+*/
+
+/* --- Desktop-first adjustments for smaller desktops --- */
 @media (max-width: 1600px) {
   .dashboard-container {
     grid-template-columns: 320px 1fr 360px;
-    grid-template-rows: 1fr 330px;
+    grid-template-rows: 1fr 330px; /* Adjusted bottom row */
   }
 }
 
 @media (max-width: 1400px) {
   .dashboard-container {
     grid-template-columns: 300px 1fr 340px;
-    grid-template-rows: 1fr 300px;
+    grid-template-rows: 1fr 300px; /* Adjusted bottom row */
   }
 }
 
+/*
+ * --- BELOW 1200px: (Small Desktop / Large Tablet) ---
+ * - Map on top
+ * - Sidebars side-by-side
+ * - Charts on bottom
+*/
 @media (max-width: 1200px) {
   .dashboard-container {
-    grid-template-columns: 1fr 280px;
-    grid-template-rows: 1fr 300px;
+    /* Set height to 'auto' so the page can scroll */
+    height: auto;
+    min-height: calc(100vh - 70px);
+
+    grid-template-columns: 1fr 1fr; /* 2 columns for sidebars */
+    grid-template-rows: 440px auto auto; /* Map (slightly shorter) | Sidebars | Charts (auto height) */
     grid-template-areas:
-      "map right-sidebar"
-      "charts right-sidebar";
+      "map map"
+      "left-sidebar right-sidebar"
+      "charts charts";
   }
 
+  /* --- FIX FOR UNWANTED SCROLLS --- */
+  .left-sidebar-section,
+  .right-sidebar-section {
+    overflow-y: visible; /* Removes the internal scrollbar */
+    min-height: 400px;
+    height: auto; /* Allows them to grow with content */
+    box-shadow: none;
+    border-left: none;
+    border-right: none;
+    z-index: auto;
+  }
+
+  /* Add a separator line between the sidebars */
   .left-sidebar-section {
-    display: none;
-  }
-}
-
-@media (max-width: 1024px) {
-  .dashboard-container {
-    grid-template-columns: 1fr;
-    grid-template-rows: 45vh auto 320px;
-    grid-template-areas:
-      "map"
-      "right-sidebar"
-      "charts";
-  }
-
-  .left-sidebar-section {
-    display: none;
+    border-right: 1px solid var(--border-color);
   }
 
   .map-section {
     border-bottom: 1px solid var(--border-color);
+    min-height: 440px; /* Match the grid row */
+  }
+
+  .charts-section {
+    border-top: 1px solid var(--border-color);
+    min-height: 420px; /* Give stacked charts more space */
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 38vh auto auto auto; /* Slightly reduce map height */
+    grid-template-areas:
+      "map"
+      "left-sidebar"
+      "right-sidebar"
+      "charts";
+  }
+
+  .map-section {
+    min-height: 0; /* Use viewport height */
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .left-sidebar-section {
+    display: block; /* Ensure it's visible when stacking */
+    overflow-y: visible; /* Avoid nested scroll */
+    height: auto;
+    min-height: 300px;
+    border-top: 1px solid var(--border-color);
+    box-shadow: none;
   }
 
   .right-sidebar-section {
-    max-height: 500px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border-left: none;
+    overflow-y: visible; /* Remove internal scroll; rely on page scroll */
+    height: auto;
+    min-height: 300px;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
   [data-theme="dark"] .right-sidebar-section {
@@ -130,34 +187,26 @@
   }
 
   .charts-section {
-    border-top: 1px solid var(--border-color);
+    border-top: none;
+    min-height: 440px; /* Taller to ensure stacked charts are fully visible */
+    max-height: none; /* Let content drive height */
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-container {
-    grid-template-rows: 40vh auto 300px;
-  }
-
-  .charts-section {
-    max-height: 300px;
-  }
-
-  .right-sidebar-section {
-    max-height: 450px;
-  }
-}
-
+/*
+ * --- BELOW 480px: (Small Mobile) ---
+*/
 @media (max-width: 480px) {
   .dashboard-container {
-    grid-template-rows: 35vh auto 280px;
-  }
-
-  .charts-section {
-    max-height: 280px;
+    grid-template-rows: 35vh auto auto;
   }
 
   .right-sidebar-section {
-    max-height: 400px;
+    max-height: none;
+  }
+
+  .charts-section {
+    min-height: 380px; /* Keep adequate height on very small screens */
+    max-height: none;
   }
 }

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import "./History.css";
 import useSlideNavigation from "../hooks/useSlideNavigation";
 import SlideIndicator from "../components/history/SlideIndicator";
-import NavigationArrows from "../components/history/NavigationArrows";
+// import NavigationArrows from "../components/history/NavigationArrows";
 
 export default function History() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -330,18 +330,52 @@ export default function History() {
         </div>
       </div>
 
-      <SlideIndicator
-        totalSlides={totalSlides}
-        currentSlide={currentSlide}
-        onSlideChange={goToSlide}
-      />
+      {/* Compact control stack on the right: Up button, dots, Down button */}
+      <div className="indicator-stack">
+        {currentSlide > 0 && (
+          <button
+            className="nav-arrow nav-arrow-up nav-arrow--compact"
+            onClick={prevSlide}
+            aria-label="Previous slide"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </button>
+        )}
 
-      <NavigationArrows
-        currentSlide={currentSlide}
-        totalSlides={totalSlides}
-        onNext={nextSlide}
-        onPrev={prevSlide}
-      />
+        <SlideIndicator
+          totalSlides={totalSlides}
+          currentSlide={currentSlide}
+          onSlideChange={goToSlide}
+        />
+
+        {currentSlide < totalSlides - 1 && (
+          <button
+            className="nav-arrow nav-arrow-down nav-arrow--compact"
+            onClick={nextSlide}
+            aria-label="Next slide"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

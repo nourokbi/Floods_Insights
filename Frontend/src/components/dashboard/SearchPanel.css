@@ -16,7 +16,6 @@
 
 [data-theme="dark"] .search-panel {
   box-shadow: -2px 0 12px rgba(0, 0, 0, 0.4);
-  /* Border color handled by CSS variable */
 }
 
 .panel-title {
@@ -353,21 +352,68 @@
 
 /* Responsive */
 @media (max-width: 1200px) {
+  /* Compact padding and switch to grid to allow side-by-side controls */
+  .search-panel {
+    border: none;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .panel-title {
+    grid-column: 1 / -1;
+    margin-bottom: 0.75rem;
+  }
+  /* Place control groups side by side */
+  .control-group {
+    margin-bottom: 0;
+  }
+  /* Info boxes area spans full width but uses two columns internally */
+  .info-boxes {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 0.5rem;
+  }
+  .growth-stats-box,
+  .no-data-message {
+    grid-column: 1 / -1;
+  }
   .growth-stats-content {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
+  /* Keep compact two-column layout like <=1200px to reduce sizes */
   .search-panel {
-    padding: 15px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-content: start;
   }
-
   .panel-title {
+    grid-column: 1 / -1;
     font-size: 1.25rem;
+    margin-bottom: 0.5rem;
   }
-
+  .control-group {
+    margin-bottom: 0;
+  }
+  .info-boxes {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 0.5rem;
+  }
+  .info-box {
+    padding: 1rem;
+  }
   .info-value {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 }
