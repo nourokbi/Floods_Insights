@@ -224,6 +224,29 @@ const Report = {
       throw new Error(`فشل في جلب إحصائيات التقارير: ${error.message}`);
     }
   },
+
+  // NEW: جلب أعلى التقارير من حيث عدد اللايكس
+  async getTopLiked(limit = 5) {
+    try {
+      const reports = await db("reports")
+        .leftJoin("users", "reports.created_by", "users.id")
+        .leftJoin("likes", "reports.id", "likes.report_id")
+        .select(
+          "reports.*",
+          "users.name as author_name",
+          db.raw("ST_X(location_coordinates) as longitude"),
+          db.raw("ST_Y(location_coordinates) as latitude"),
+          db.raw("COUNT(likes.id) as likes_count")
+        )
+        .groupBy("reports.id", "users.id", "users.name")
+        .orderBy("likes_count", "desc")
+        .limit(limit);
+
+      return reports.map(processImagesForResponse);
+    } catch (error) {
+      throw new Error(`فشل في جلب أعلى التقارير إعجاباً: ${error.message}`);
+    }
+  },
 };
 
 export default Report;

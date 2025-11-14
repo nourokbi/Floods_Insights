@@ -20,6 +20,9 @@ router.get(
 
 router.get("/stats/summary", reportsController.getReportsStats);
 
+// NEW: top liked reports (public)
+router.get("/top/liked", reportsController.getTopLikedReports);
+
 // 🔐 المسارات المحمية (تحتاج مصادقة)
 router.use(authMiddleware.authenticateToken);
 

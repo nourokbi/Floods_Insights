@@ -177,6 +177,26 @@ const authController = {
       });
     }
   },
+
+  // تسجيل الخروج
+  async logout(req, res) {
+    try {
+      res.json({
+        success: true,
+        message: "تم تسجيل الخروج بنجاح",
+        data: {
+          loggedOutUser: req.user.email,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      console.error("خطأ في تسجيل الخروج:", error);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء تسجيل الخروج",
+      });
+    }
+  },
 };
 
 export default authController;

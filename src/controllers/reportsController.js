@@ -372,6 +372,25 @@ const reportsController = {
     }
   },
 
+  // NEW: إرجاع أعلى التقارير إعجاباً
+  async getTopLikedReports(req, res) {
+    try {
+      const limit = parseInt(req.query.limit, 10) || 5;
+      const reports = await Report.getTopLiked(limit);
+
+      res.json({
+        success: true,
+        data: { reports },
+      });
+    } catch (error) {
+      console.error("خطأ في جلب أعلى التقارير إعجاباً:", error);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ أثناء جلب أعلى التقارير إعجاباً",
+      });
+    }
+  },
+
   // الحصول على تقارير المستخدم الحالي (إذا كان أدمن)
   async getMyReports(req, res) {
     try {

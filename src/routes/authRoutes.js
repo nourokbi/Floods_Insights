@@ -20,6 +20,13 @@ router.post(
   authController.login
 );
 
+// تسجيل الخروج
+router.post(
+  "/logout",
+  authMiddleware.authenticateToken,
+  authController.logout
+);
+
 // الحصول على بيانات المستخدم الحالي (تحتاج مصادقة)
 router.get("/me", authMiddleware.authenticateToken, authController.getMe);
 
