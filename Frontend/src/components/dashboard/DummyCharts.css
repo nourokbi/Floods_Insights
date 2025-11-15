@@ -1,0 +1,130 @@
+.dummy-charts-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 16px;
+  padding: 12px;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.chart-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex: 0 1 500px;
+  box-sizing: border-box;
+}
+.chart-wrapper > div {
+  max-height: 100%;
+}
+.chart-wrapper:hover {
+  background: var(--card-bg);
+  border-color: #2563eb;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .chart-wrapper {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .chart-wrapper:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+}
+
+.chart-header {
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+  transition: border-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.chart-wrapper:hover .chart-header {
+  border-bottom-color: #2563eb;
+}
+
+[data-theme="dark"] .chart-wrapper:hover .chart-header {
+  border-bottom-color: #3b82f6;
+}
+
+.chart-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 0.25rem 0;
+}
+
+.chart-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.chart-canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-canvas > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+.chart-canvas canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .chart-wrapper {
+    flex: 0 1 400px;
+  }
+}
+
+@media (max-width: 999px) {
+  /* --- CHANGED FROM 1024px --- */
+  .dummy-charts-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px;
+  }
+
+  .chart-wrapper {
+    flex: 1;
+    min-height: 420px; /* Ensure enough height when stacked */
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-wrapper {
+    padding: 0.5rem;
+    min-height: 440px; /* Slightly taller on very small screens */
+  }
+
+  .chart-title {
+    font-size: 0.8125rem;
+  }
+
+  .chart-subtitle {
+    font-size: 0.625rem;
+  }
+}
