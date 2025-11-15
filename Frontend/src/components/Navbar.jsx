@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   Sun,
   Moon,
@@ -12,8 +12,11 @@ import {
 } from "lucide-react";
 import "./Navbar.css";
 import mainLogo from "../assets/main-logo.png";
+import { useAuth } from "../context/AuthContext";
 
-export default function Navbar() {
+function Navbar() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth() || {};
   const [theme, setTheme] = useState(() => {
     // Load theme from localStorage or default to 'light'
     const savedTheme = localStorage.getItem("theme");
@@ -50,10 +53,10 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }
 
-  function handleLogout() {
-    console.log("Logging out...");
-    // Add your logout logic here
+  async function handleLogout() {
+    if (logout) await logout();
     toggleUserMenu();
+    navigate("/");
   }
 
   // Close dropdown when clicking outside
@@ -182,7 +185,7 @@ export default function Navbar() {
               {theme === "light" ? <Moon /> : <Sun />}
             </button>
 
-            {/* User Menu Dropdown */}
+            {/* User Actions */}
             <div className="user-menu">
               <button
                 ref={buttonRef}
@@ -190,6 +193,7 @@ export default function Navbar() {
                 onClick={toggleUserMenu}
                 aria-label="User menu"
                 aria-expanded={isUserMenuOpen}
+                title={user?.email || "User menu"}
               >
                 <User className="user-icon" />
               </button>
@@ -199,34 +203,73 @@ export default function Navbar() {
                   ref={dropdownRef}
                   className={`user-dropdown ${menuAnimation}`}
                 >
-                  <div className="user-info">
-                    <p className="user-name">John Doe</p>
-                    <p className="user-email">john.doe@example.com</p>
-                  </div>
+                  {user ? (
+                    <>
+                      <div className="user-info">
+                        <p className="user-name">
+                          {user?.name || "Current User"}
+                        </p>
+                        {user?.email && (
+                          <p className="user-email">{user.email}</p>
+                        )}
+                      </div>
 
-                  <ul className="dropdown-menu">
-                    <li className="dropdown-item">
-                      <Link to="/saved" className="dropdown-link">
-                        <Bookmark />
-                        <span>Saved</span>
-                      </Link>
-                    </li>
-                    <li className="dropdown-item">
-                      <Link to="/settings" className="dropdown-link">
-                        <Settings />
-                        <span>Settings</span>
-                      </Link>
-                    </li>
-                    <li className="dropdown-item">
-                      <button
-                        onClick={handleLogout}
-                        className="dropdown-link logout"
-                      >
-                        <LogOut />
-                        <span>Logout</span>
-                      </button>
-                    </li>
-                  </ul>
+                      <ul className="dropdown-menu">
+                        <li className="dropdown-item">
+                          <Link
+                            to="/saved"
+                            className="dropdown-link"
+                            onClick={toggleUserMenu}
+                          >
+                            <Bookmark />
+                            <span>Saved</span>
+                          </Link>
+                        </li>
+                        <li className="dropdown-item">
+                          <Link
+                            to="/settings"
+                            className="dropdown-link"
+                            onClick={toggleUserMenu}
+                          >
+                            <Settings />
+                            <span>Settings</span>
+                          </Link>
+                        </li>
+                        <li className="dropdown-item">
+                          <button
+                            onClick={handleLogout}
+                            className="dropdown-link logout"
+                          >
+                            <LogOut />
+                            <span>Logout</span>
+                          </button>
+                        </li>
+                      </ul>
+                    </>
+                  ) : (
+                    <ul className="dropdown-menu">
+                      <li className="dropdown-item">
+                        <Link
+                          to="/login"
+                          className="dropdown-link"
+                          onClick={toggleUserMenu}
+                        >
+                          <User />
+                          <span>Login</span>
+                        </Link>
+                      </li>
+                      <li className="dropdown-item">
+                        <Link
+                          to="/register"
+                          className="dropdown-link"
+                          onClick={toggleUserMenu}
+                        >
+                          <User />
+                          <span>Register</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </div>
               )}
             </div>
@@ -245,3 +288,6 @@ export default function Navbar() {
     </header>
   );
 }
+
+export default Navbar;
+export { Navbar };
