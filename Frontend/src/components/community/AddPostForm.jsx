@@ -1,21 +1,29 @@
 import React, { useState } from "react";
 import { Image as ImageIcon, Send } from "lucide-react";
+import "./AddPostForm.css";
+import { useAuth } from "../../context/AuthContext";
+
 export default function AddPostForm({ onAddPost }) {
+  const { token } = useAuth();
   const [form, setForm] = useState({
     title: "",
     description: "",
     location: "",
     category: "flood",
+    link: "",
+    status: "active",
     author: "You",
   });
-  const [imagePreview, setImagePreview] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [status, setStatus] = useState("idle"); // idle | posting | success | error
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const handleImage = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file); // store real file
-      setImagePreview(URL.createObjectURL(file)); // keep preview
+    const files = Array.from(e.target.files || []);
+    if (files.length) {
+      setImageFiles(files);
+      setImagePreview(files.map((f) => URL.createObjectURL(f)));
     }
   };
 
@@ -23,28 +31,103 @@ export default function AddPostForm({ onAddPost }) {
     e.preventDefault();
 
     if (!form.title || !form.description || !form.location) {
-      return alert("Please fill in all required fields.");
+      setErrorMsg("Please fill in the title, description and location.");
+      return;
     }
+    setErrorMsg(null);
+    setStatus("posting");
 
     // Build FormData for API
     const fd = new FormData();
     fd.append("title", form.title);
     fd.append("description", form.description);
     fd.append("location_name", form.location);
+    // send placeholder coordinates (0,0) for now
+    fd.append("latitude", "0");
+    fd.append("longitude", "0");
     fd.append("disaster_type", form.category);
     fd.append("link", form.link || "");
+    fd.append("status", form.status || "active");
 
-    if (imageFile) {
-      fd.append("images", imageFile);
+    // append image files (API expects images[] or multiple 'images')
+    if (imageFiles && imageFiles.length) {
+      imageFiles.forEach((file) => fd.append("images", file));
     }
 
-    // Call parent function
-    onAddPost(fd);
+    try {
+      if (onAddPost) {
+        // delegate submission to parent which returns the created/ formatted post
+        const created = await onAddPost(fd);
+        if (!created) {
+          setStatus("error");
+          setErrorMsg("Failed to create report. Please try again.");
+          return;
+        }
 
-    // Reset UI
-    setForm({ title: "", description: "", location: "", category: "flood" });
-    setImagePreview(null);
-    setImageFile(null);
+        // success — show inline success state on the button
+        setStatus("success");
+        setErrorMsg(null);
+
+        // Reset UI fields
+        setForm({
+          title: "",
+          description: "",
+          location: "",
+          category: "flood",
+          link: "",
+          status: "active",
+          author: "You",
+        });
+        setImagePreview([]);
+        setImageFiles([]);
+
+        // revert success state after a short delay
+        setTimeout(() => setStatus("idle"), 2500);
+        return;
+      }
+
+      // Fallback: if parent didn't provide handler, do POST here (legacy behavior)
+      const headers = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const resp = await fetch(
+        "https://kartak-demo-od0f.onrender.com/api/reports",
+        {
+          method: "POST",
+          headers,
+          body: fd,
+        }
+      );
+      const json = await resp.json();
+      if (!json?.success) {
+        console.error("Add post failed:", json);
+        setStatus("error");
+        setErrorMsg(json?.message || "Failed to create report");
+        return;
+      }
+
+      // success
+      setStatus("success");
+      setErrorMsg(null);
+      setForm({
+        title: "",
+        description: "",
+        location: "",
+        category: "flood",
+        link: "",
+        status: "active",
+        author: "You",
+      });
+      setImagePreview([]);
+      setImageFiles([]);
+      setTimeout(() => setStatus("idle"), 2500);
+    } catch (err) {
+      console.error("Error creating report:", err);
+      setStatus("error");
+      setErrorMsg(
+        err?.message || "Failed to create report. See console for details."
+      );
+    }
   };
   // const handleImage = (e) => {
   //   const file = e.target.files?.[0];
@@ -53,6 +136,7 @@ export default function AddPostForm({ onAddPost }) {
   return (
     <form className="add-post-form" onSubmit={handleSubmit}>
       <h2>Add New Post</h2>
+      {errorMsg && <div className="form-error">{errorMsg}</div>}
       <input
         type="text"
         placeholder="Title"
@@ -70,6 +154,7 @@ export default function AddPostForm({ onAddPost }) {
         value={form.location}
         onChange={(e) => setForm({ ...form, location: e.target.value })}
       />
+      {/* Coordinates removed — we don't send latitude/longitude from the frontend */}
 
       <select
         value={form.category}
@@ -82,8 +167,17 @@ export default function AddPostForm({ onAddPost }) {
         <option value="storm">Storm</option>
         <option value="other">Other Disaster</option>
       </select>
-      {imagePreview && (
-        <img src={imagePreview} alt="Preview" className="imagepreview" />
+      {imagePreview && imagePreview.length > 0 && (
+        <div className="image-preview-grid">
+          {imagePreview.map((src, idx) => (
+            <img
+              key={idx}
+              src={src}
+              alt={`Preview ${idx + 1}`}
+              className="imagepreview"
+            />
+          ))}
+        </div>
       )}
       <div className="add-post-form-buttons">
         <label className="upload-label">
@@ -92,15 +186,22 @@ export default function AddPostForm({ onAddPost }) {
           <input
             type="file"
             accept="image/*"
+            multiple
             onChange={handleImage}
-            style={{
-              display: "none",
-            }}
+            className="hidden-file-input"
           />
         </label>
-        <button type="submit" className="submit-post">
+        <button
+          type="submit"
+          className={`submit-post ${status === "success" ? "success" : ""}`}
+          disabled={status === "posting"}
+        >
           <Send size={20} />
-          Post
+          {status === "posting"
+            ? "Posting..."
+            : status === "success"
+            ? "Posted"
+            : "Post"}
         </button>
       </div>
     </form>

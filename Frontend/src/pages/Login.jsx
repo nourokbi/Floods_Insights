@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Auth.css";
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const { login, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +17,7 @@ function Login() {
     setError("");
     try {
       await login(email, password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError("Login failed. Please check your credentials.");
     }
@@ -25,6 +27,9 @@ function Login() {
     <div className="auth-container">
       <div className="auth-card">
         <h2 className="auth-title">Sign in</h2>
+        {location.state?.from && (
+          <div className="auth-info">You must sign in to access that page.</div>
+        )}
         <form onSubmit={onSubmit} className="auth-form">
           <label className="auth-label">Email</label>
           <input

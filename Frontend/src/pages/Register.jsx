@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Auth.css";
 
 function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
   const { register, loading } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ function Register() {
     setError("");
     try {
       await register(name, email, password);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError("Registration failed. Please try again. " + err.message);
     }
@@ -26,6 +28,11 @@ function Register() {
     <div className="auth-container">
       <div className="auth-card">
         <h2 className="auth-title">Create account</h2>
+        {location.state?.from && (
+          <div className="auth-info">
+            You must create an account to access that page.
+          </div>
+        )}
         <form onSubmit={onSubmit} className="auth-form">
           <label className="auth-label">Name</label>
           <input

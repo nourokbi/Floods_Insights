@@ -4,50 +4,49 @@ const reportValidation = {
   // تحقق من بيانات إنشاء التقرير
   create: Joi.object({
     title: Joi.string().min(5).max(255).required().messages({
-      "string.empty": "عنوان التقرير مطلوب",
-      "string.min": "عنوان التقرير يجب أن يكون至少 5 أحرف",
-      "string.max": "عنوان التقرير يجب أن لا يتجاوز 255 حرف",
+      "string.empty": "Title is required",
+      "string.min": "Title must be at least 5 characters",
+      "string.max": "Title must not exceed 255 characters",
     }),
 
     description: Joi.string().min(10).required().messages({
-      "string.empty": "وصف التقرير مطلوب",
-      "string.min": "وصف التقرير يجب أن يكون至少 10 أحرف",
+      "string.empty": "Description is required",
+      "string.min": "Description must be at least 10 characters",
     }),
 
     location_name: Joi.string().max(100).required().messages({
-      "string.empty": "اسم الموقع مطلوب",
-      "string.max": "اسم الموقع يجب أن لا يتجاوز 100 حرف",
+      "string.empty": "Location name is required",
+      "string.max": "Location name must not exceed 100 characters",
     }),
 
     disaster_type: Joi.string()
       .valid("flood", "earthquake", "wildfire", "storm", "landslide", "other")
       .required()
       .messages({
-        "any.only": "نوع الكارثة يجب أن يكون من الأنواع المسموحة",
-        "string.empty": "نوع الكارثة مطلوب",
+        "any.only": "Disaster type must be one of the allowed values",
+        "string.empty": "Disaster type is required",
       }),
 
-    longitude: Joi.number().min(-180).max(180).required().messages({
-      "number.base": "خط الطول يجب أن يكون رقم",
-      "number.min": "خط الطول يجب أن يكون بين -180 و 180",
-      "number.max": "خط الطول يجب أن يكون بين -180 و 180",
-      "any.required": "خط الطول مطلوب",
+    // latitude and longitude are optional for reports; if provided they must be valid numbers
+    longitude: Joi.number().min(-180).max(180).optional().messages({
+      "number.base": "Longitude must be a number",
+      "number.min": "Longitude must be between -180 and 180",
+      "number.max": "Longitude must be between -180 and 180",
     }),
 
-    latitude: Joi.number().min(-90).max(90).required().messages({
-      "number.base": "خط العرض يجب أن يكون رقم",
-      "number.min": "خط العرض يجب أن يكون بين -90 و 90",
-      "number.max": "خط العرض يجب أن يكون بين -90 و 90",
-      "any.required": "خط العرض مطلوب",
+    latitude: Joi.number().min(-90).max(90).optional().messages({
+      "number.base": "Latitude must be a number",
+      "number.min": "Latitude must be between -90 and 90",
+      "number.max": "Latitude must be between -90 and 90",
     }),
 
     link: Joi.string().uri().allow("").optional().messages({
-      "string.uri": "الرابط يجب أن يكون رابط صالح",
+      "string.uri": "Link must be a valid URL",
     }),
 
     images: Joi.array().items(Joi.string().uri()).optional().messages({
-      "array.base": "الصور يجب أن تكون مصفوفة من روابط",
-      "string.uri": "رابط الصورة يجب أن يكون رابط صالح",
+      "array.base": "Images must be an array of URLs",
+      "string.uri": "Each image must be a valid URL",
     }),
 
     status: Joi.string().valid("active", "resolved").default("active"),

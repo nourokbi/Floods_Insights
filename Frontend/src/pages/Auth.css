@@ -72,3 +72,12 @@
   font-size: 0.875rem;
   margin-top: 6px;
 }
+
+.auth-info {
+  background: rgba(37, 99, 235, 0.06);
+  color: #1e40af;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}

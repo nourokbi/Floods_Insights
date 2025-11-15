@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AddPostForm from "../components/Community/AddPostForm";
 import PostCard from "../components/Community/PostCard";
 import Sidebar from "../components/Community/Sidebar";
 import "./Community.css";
+import RequireAuth from "../components/Auth/RequireAuth";
 export default function Community() {
   const navigate = useNavigate();
   // LOCAL state for now (will be replaced by API later)
@@ -56,6 +58,8 @@ export default function Community() {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [expandedComments, setExpandedComments] = useState(new Set());
+  const { token, user } = useAuth();
+  const location = useLocation();
 
   // --- Fetch posts from API on mount using Axios ---
   useEffect(() => {
@@ -123,29 +127,98 @@ export default function Community() {
         };
 
         setPosts((prev) => [formatted, ...prev]);
+        return formatted; // return created formatted post to caller
       }
+
+      throw new Error(data?.message || "Failed to create post");
     } catch (error) {
       console.error("Error adding post:", error);
-      alert("Error creating post. Try again.");
+      // rethrow so callers (AddPostForm) can show inline errors
+      throw error;
     }
   };
   // --- Handlers (will map to API calls later) ---
-  const handleLike = (postId) => {
+  const handleLike = async (postId) => {
+    if (!user || !token) {
+      // redirect to login preserving location
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    // optimistic update
     const updated = new Set(likedPosts);
+    const willLike = !updated.has(postId);
+    if (willLike) updated.add(postId);
+    else updated.delete(postId);
+
     setPosts((prev) =>
       prev.map((p) =>
         p.id === postId
-          ? { ...p, likes: updated.has(postId) ? p.likes - 1 : p.likes + 1 }
+          ? { ...p, likes: willLike ? p.likes + 1 : Math.max(0, p.likes - 1) }
           : p
       )
     );
-    updated.has(postId) ? updated.delete(postId) : updated.add(postId);
     setLikedPosts(updated);
+
+    try {
+      await axios.post(
+        "https://kartak-demo-od0f.onrender.com/api/likes/toggle",
+        { report_id: Number(postId) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      // revert optimistic update on error
+      const revert = new Set(likedPosts);
+      if (willLike) revert.delete(postId);
+      else revert.add(postId);
+      setLikedPosts(revert);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, likes: willLike ? Math.max(0, p.likes - 1) : p.likes + 1 }
+            : p
+        )
+      );
+    }
   };
-  const handleSave = (postId) => {
+  const handleSave = async (postId) => {
+    if (!user || !token) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    // optimistic toggle
     const updated = new Set(savedPosts);
-    updated.has(postId) ? updated.delete(postId) : updated.add(postId);
+    const willSave = !updated.has(postId);
+    if (willSave) updated.add(postId);
+    else updated.delete(postId);
     setSavedPosts(updated);
+
+    try {
+      await axios.post(
+        "https://kartak-demo-od0f.onrender.com/api/bookmarks/toggle",
+        { report_id: Number(postId) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Error toggling bookmark:", err);
+      // revert
+      const revert = new Set(savedPosts);
+      if (willSave) revert.delete(postId);
+      else revert.add(postId);
+      setSavedPosts(revert);
+    }
   };
   const toggleComments = (postId) => {
     const updated = new Set(expandedComments);
@@ -167,22 +240,7 @@ export default function Community() {
       )
     );
   };
-  // const handleAddPost = (postPayload) => {
-  //   const post = {
-  //     id: `${Date.now()}`,
-  //     title: postPayload.title,
-  //     description: postPayload.description,
-  //     location: postPayload.location,
-  //     category: postPayload.category || "general",
-  //     author: postPayload.author || "You",
-  //     timestamp: "Just now",
-  //     likes: 0,
-  //     comments: [],
-  //     image: postPayload.image || "",
-  //   };
-  //   setPosts((prev) => [post, ...prev]);
-  // };
-  // Example: computed trending
+
   const mostLikedPosts = [...posts]
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 5);
@@ -190,42 +248,44 @@ export default function Community() {
     // Placeholder for future fetch usage. Keep empty now.
   }, []);
   return (
-    <div className="community-page">
-      <header className="community-header">
-        <div className="header-content">
-          <button className="back-button" onClick={() => navigate("/")}>
-            ← Back to Home
-          </button>
-          <h1 className="community-title">Community Hub</h1>
-          <p className="community-subtitle">
-            Share experiences, alerts, and support each other
-          </p>
-        </div>
-      </header>
-      <div className="community-container">
-        <main className="posts-section">
-          <AddPostForm onAddPost={handleAddPost} />
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              isLiked={likedPosts.has(post.id)}
-              isSaved={savedPosts.has(post.id)}
-              commentsExpanded={expandedComments.has(post.id)}
-              onLike={() => handleLike(post.id)}
-              onSave={() => handleSave(post.id)}
-              onToggleComments={() => toggleComments(post.id)}
-              onAddComment={(text) => handleAddComment(post.id, text)}
+    <RequireAuth>
+      <div className="community-page">
+        <header className="community-header">
+          <div className="header-content">
+            <button className="back-button" onClick={() => navigate("/")}>
+              ← Back to Home
+            </button>
+            <h1 className="community-title">Community Hub</h1>
+            <p className="community-subtitle">
+              Share experiences, alerts, and support each other
+            </p>
+          </div>
+        </header>
+        <div className="community-container">
+          <main className="posts-section">
+            <AddPostForm onAddPost={handleAddPost} />
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                isLiked={likedPosts.has(post.id)}
+                isSaved={savedPosts.has(post.id)}
+                commentsExpanded={expandedComments.has(post.id)}
+                onLike={() => handleLike(post.id)}
+                onSave={() => handleSave(post.id)}
+                onToggleComments={() => toggleComments(post.id)}
+                onAddComment={(text) => handleAddComment(post.id, text)}
+              />
+            ))}
+          </main>
+          <aside className="community-sidebar">
+            <Sidebar
+              mostLikedPosts={mostLikedPosts}
+              onAnalyze={() => navigate("/analyze")}
             />
-          ))}
-        </main>
-        <aside className="community-sidebar">
-          <Sidebar
-            mostLikedPosts={mostLikedPosts}
-            onAnalyze={() => navigate("/analyze")}
-          />
-        </aside>
+          </aside>
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   );
 }

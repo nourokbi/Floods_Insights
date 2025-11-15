@@ -1,0 +1,89 @@
+.add-post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.add-post-form input[type="text"],
+.add-post-form textarea,
+.add-post-form select {
+  padding: 10px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.coord-row {
+  display: flex;
+  gap: 8px;
+}
+
+.imagepreview {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.add-post-form-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.upload-label {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 2px dashed var(--border-color);
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.submit-post {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.submit-post[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submit-post.success {
+  background: #28a745; /* green */
+}
+
+.form-error {
+  padding: 8px 10px;
+  background: rgba(255, 0, 0, 0.06);
+  color: #b00020;
+  border: 1px solid rgba(176, 0, 32, 0.12);
+  border-radius: 6px;
+}
+
+.coord-row input {
+  flex: 1;
+}
