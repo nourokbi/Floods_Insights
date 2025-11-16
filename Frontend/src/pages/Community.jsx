@@ -7,6 +7,15 @@ import PostCard from "../components/Community/PostCard";
 import Sidebar from "../components/Community/Sidebar";
 import "./Community.css";
 import RequireAuth from "../components/Auth/RequireAuth";
+// API hosts: keep both local and remote here so we can switch easily
+const API_HOSTS = {
+  local: "http://localhost:5000",
+  onrender: "https://kartak-demo-od0f.onrender.com",
+};
+
+// Active base URL — change to API_HOSTS.onrender to use the remote API
+const API_BASE = API_HOSTS.local;
+
 export default function Community() {
   const navigate = useNavigate();
   // posts loaded from API
@@ -25,9 +34,7 @@ export default function Community() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await axios.get(
-        "https://kartak-demo-od0f.onrender.com/api/reports"
-      );
+      const res = await axios.get(`${API_BASE}/api/reports`);
 
       const data = res.data;
 
@@ -53,14 +60,11 @@ export default function Community() {
         try {
           const commentFetches = apiPosts.map((p) =>
             axios
-              .get(
-                `https://kartak-demo-od0f.onrender.com/api/comments/report/${p.id}`,
-                {
-                  headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                  },
-                }
-              )
+              .get(`${API_BASE}/api/comments/report/${p.id}`, {
+                headers: {
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              })
               .then((r) => ({ id: p.id, data: r.data }))
               .catch((e) => {
                 console.error("Error fetching comments for post", p.id, e);
@@ -94,7 +98,7 @@ export default function Community() {
         if (token) {
           try {
             const bookmarked = await axios.get(
-              "https://kartak-demo-od0f.onrender.com/api/bookmarks/my?limit=1000",
+              `${API_BASE}/api/bookmarks/my?limit=1000`,
               {
                 headers: {
                   ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -113,14 +117,11 @@ export default function Community() {
           }
           // also fetch likes for the current user so liked posts show active
           try {
-            const lk = await axios.get(
-              "https://kartak-demo-od0f.onrender.com/api/likes/my?limit=1000",
-              {
-                headers: {
-                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-              }
-            );
+            const lk = await axios.get(`${API_BASE}/api/likes/my?limit=1000`, {
+              headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+            });
 
             if (lk?.data?.success) {
               const likedIds = new Set(
@@ -189,11 +190,9 @@ export default function Community() {
       const headers = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const res = await axios.post(
-        "https://kartak-demo-od0f.onrender.com/api/reports",
-        payload,
-        { headers }
-      );
+      const res = await axios.post(`${API_BASE}/api/reports`, payload, {
+        headers,
+      });
 
       const data = res.data;
 
@@ -257,7 +256,7 @@ export default function Community() {
 
     try {
       await axios.post(
-        "https://kartak-demo-od0f.onrender.com/api/likes/toggle",
+        `${API_BASE}/api/likes/toggle`,
         { report_id: Number(postId) },
         {
           headers: {
@@ -297,7 +296,7 @@ export default function Community() {
 
     try {
       await axios.post(
-        "https://kartak-demo-od0f.onrender.com/api/bookmarks/toggle",
+        `${API_BASE}/api/bookmarks/toggle`,
         { report_id: Number(postId) },
         {
           headers: {
@@ -348,7 +347,7 @@ export default function Community() {
     (async () => {
       try {
         const res = await axios.post(
-          "https://kartak-demo-od0f.onrender.com/api/comments",
+          `${API_BASE}/api/comments`,
           { report_id: Number(postId), comment_text: commentText },
           {
             headers: {
