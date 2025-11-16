@@ -11,6 +11,8 @@ export default function AddPostForm({ onAddPost }) {
     location: "",
     category: "flood",
     link: "",
+    latitude: "",
+    longitude: "",
     status: "active",
     author: "You",
   });
@@ -42,9 +44,9 @@ export default function AddPostForm({ onAddPost }) {
     fd.append("title", form.title);
     fd.append("description", form.description);
     fd.append("location_name", form.location);
-    // send placeholder coordinates (0,0) for now
-    fd.append("latitude", "0");
-    fd.append("longitude", "0");
+    // append coordinates if provided, otherwise fall back to 0
+    fd.append("latitude", form.latitude ? String(form.latitude) : "0");
+    fd.append("longitude", form.longitude ? String(form.longitude) : "0");
     fd.append("disaster_type", form.category);
     fd.append("link", form.link || "");
     fd.append("status", form.status || "active");
@@ -75,6 +77,8 @@ export default function AddPostForm({ onAddPost }) {
           location: "",
           category: "flood",
           link: "",
+          latitude: "",
+          longitude: "",
           status: "active",
           author: "You",
         });
@@ -115,6 +119,8 @@ export default function AddPostForm({ onAddPost }) {
         location: "",
         category: "flood",
         link: "",
+        latitude: "",
+        longitude: "",
         status: "active",
         author: "You",
       });
@@ -154,7 +160,27 @@ export default function AddPostForm({ onAddPost }) {
         value={form.location}
         onChange={(e) => setForm({ ...form, location: e.target.value })}
       />
-      {/* Coordinates removed — we don't send latitude/longitude from the frontend */}
+      {/* Optional reference link and coordinates */}
+      <input
+        type="url"
+        placeholder="Reference link (optional)"
+        value={form.link}
+        onChange={(e) => setForm({ ...form, link: e.target.value })}
+      />
+      <div className="coords-row">
+        <input
+          type="text"
+          placeholder="Latitude (optional)"
+          value={form.latitude}
+          onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Longitude (optional)"
+          value={form.longitude}
+          onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+        />
+      </div>
 
       <select
         value={form.category}

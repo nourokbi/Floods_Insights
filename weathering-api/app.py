@@ -174,6 +174,108 @@ def make_flood_prediction(weather_features):
     logger.info(f"✅ Flood prediction made: {result}")
     return result
 
+def calculate_flood_risk_equation(weather_features):
+    """
+    Heuristic flood-risk scoring (no ML). Returns risk_level, score and breakdown.
+    Tune the max_points per factor below to adjust sensitivity.
+    Expects weather_features keys: precip, rain, snowfall, humidity, windspeed,
+    pressure, elevation, season, temp_max, temp_min
+    """
+    # safe conversions and defaults
+    def f(k, default=0.0):
+        try:
+            return float(weather_features.get(k, default))
+        except:
+            return float(default)
+
+    precip = f('precip')      # avg precipitation (units from API)
+    rain = f('rain')
+    snowfall = f('snowfall')
+    humidity = f('humidity')
+    wind = f('windspeed')
+    pressure = f('pressure')
+    elevation = f('elevation')
+    season = int(f('season', 0))
+    temp_max = f('temp_max')
+    temp_min = f('temp_min')
+
+    # Max points allocation (sum = 100)
+    MAX = {
+        'precip': 35,
+        'rain': 25,
+        'snow': 10,
+        'humidity': 8,
+        'pressure': 6,
+        'wind': 5,
+        'elevation': 6,
+        'season': 5
+    }
+
+    breakdown = {}
+
+    # Precipitation: scale to MAX['precip'] assuming ~50mm is very high
+    breakdown['precip_points'] = min(MAX['precip'], (precip / 50.0) * MAX['precip'])
+
+    # Rain intensity: scale assuming 20mm is strong
+    breakdown['rain_points'] = min(MAX['rain'], (rain / 20.0) * MAX['rain'])
+
+    # Snow melt risk: if snowfall significant and temp allows melting
+    if snowfall > 5 and temp_max > 0:
+        breakdown['snow_points'] = MAX['snow']
+    else:
+        breakdown['snow_points'] = 0.0
+
+    # Humidity: only penalize when > 60%
+    if humidity > 60:
+        breakdown['humidity_points'] = min(MAX['humidity'], ((humidity - 60.0) / 40.0) * MAX['humidity'])
+    else:
+        breakdown['humidity_points'] = 0.0
+
+    # Low pressure increases risk
+    if pressure and pressure < 1000:
+        breakdown['pressure_points'] = min(MAX['pressure'], ((1000.0 - pressure) / 50.0) * MAX['pressure'])
+    else:
+        breakdown['pressure_points'] = 0.0
+
+    # Wind: high wind slightly increases risk
+    breakdown['wind_points'] = min(MAX['wind'], (wind / 40.0) * MAX['wind'])
+
+    # Elevation: lower elevation -> higher points (assume 0m worst, 1000m safe)
+    if elevation is None:
+        breakdown['elevation_points'] = 0.0
+    else:
+        elev_score = max(0.0, (1000.0 - elevation) / 1000.0)  # 0..1
+        breakdown['elevation_points'] = min(MAX['elevation'], elev_score * MAX['elevation'])
+
+    # Season: simple boost for spring (1)
+    breakdown['season_points'] = MAX['season'] if season == 1 else 0.0
+
+    # Sum and clamp
+    total_score = sum(breakdown.values())
+    risk_score = round(float(total_score), 1)
+
+    # Determine level
+    if risk_score >= 10:
+        risk_level = "High"
+        message = "High flood risk detected"
+    elif risk_score >= 5:
+        risk_level = "Medium"
+        message = "Moderate flood risk"
+    else:
+        risk_level = "Low"
+        message = "Low flood risk"
+
+    # Log for debugging
+    logger.info(f"[ManualRisk] averages: {weather_features}")
+    logger.info(f"[ManualRisk] breakdown: {breakdown}, score={risk_score}, level={risk_level}")
+
+    return {
+        'risk_level': risk_level,
+        'risk_score': risk_score,
+        'message': message,
+        'breakdown': breakdown
+    }
+
 @app.route('/')
 def home():
     """API documentation"""
@@ -235,46 +337,44 @@ def get_weather():
 @app.route('/api/predict', methods=['GET'])
 def get_flood_prediction():
     """
-    Flood prediction API endpoint - returns flood prediction for coordinates
+    Flood prediction API endpoint - returns averaged weather data and
+    a risk result computed by the manual equation (no ML model used).
     """
     try:
-        # Get coordinates from query parameters
         lat = request.args.get('lat', type=float)
         lon = request.args.get('lon', type=float)
-        
+
         if lat is None or lon is None:
             return jsonify({
                 'error': 'Missing parameters',
                 'message': 'Please provide both lat and lon parameters',
                 'example': '/api/predict?lat=49.0&lon=32.0'
             }), 400
-        
-        # Validate coordinate ranges
+
         if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
             return jsonify({
                 'error': 'Invalid coordinates',
                 'message': 'Latitude must be between -90 and 90, Longitude between -180 and 180'
             }), 400
-        
-        # Get weather data
-        weather_data = get_ai_weather_data(lat, lon)
-        
-        # Get flood prediction
-        prediction = make_flood_prediction(weather_data)
-        
-        # Return response
+
+        # Get averaged weather data
+        weather_averages = get_ai_weather_data(lat, lon)
+
+        # Compute risk using the manual equation (no model)
+        risk_result = calculate_flood_risk_equation(weather_averages)
+
         response = {
             'status': 'success',
             'coordinates': {'latitude': lat, 'longitude': lon},
-            'weather_data': weather_data,
-            'flood_prediction': prediction,
+            'weather_averages': weather_averages,
+            'risk_result': risk_result,
             'timestamp': datetime.now().isoformat()
         }
-        
+
         return jsonify(response)
-        
+
     except Exception as e:
-        logger.error(f"❌ Prediction error: {str(e)}")
+        logger.error(f"❌ Prediction error (manual equation): {str(e)}")
         return jsonify({
             'error': 'Prediction failed',
             'message': str(e)
@@ -283,21 +383,17 @@ def get_flood_prediction():
 @app.route('/api/manual-predict', methods=['POST'])
 def manual_predict():
     """
-    Manual prediction endpoint - accepts custom weather data
+    Manual prediction endpoint - uses equation instead of model
     """
     try:
-        # Check if model is loaded
-        if model is None:
-            return jsonify({'error': 'Model not loaded'}), 500
-
         # Get JSON data from request
         data = request.get_json()
         
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
-        # Make prediction
-        prediction = make_flood_prediction(data)
+        # Use equation instead of model
+        prediction = calculate_flood_risk_equation(data)
         
         logger.info(f"✅ Manual prediction made: {prediction}")
         return jsonify({
@@ -307,11 +403,6 @@ def manual_predict():
             'timestamp': datetime.now().isoformat()
         })
 
-    except KeyError as e:
-        error_field = str(e).strip("'")
-        return jsonify({'error': f'Missing field: {error_field}'}), 400
-    except ValueError as e:
-        return jsonify({'error': f'Invalid data type: {str(e)}'}), 400
     except Exception as e:
         logger.error(f"❌ Manual prediction error: {str(e)}")
         return jsonify({'error': 'Internal server error'}), 500

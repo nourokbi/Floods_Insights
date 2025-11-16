@@ -74,7 +74,20 @@ export default function PostCard({
         >
           <Bookmark size={20} fill={isSaved ? "currentColor" : "none"} />
         </button>
-        <button className="action-button">
+        <button
+          className="action-button"
+          onClick={() => {
+            const link = post?.link;
+            if (!link) return;
+            try {
+              // validate URL
+              const url = new URL(link);
+              window.open(url.toString(), "_blank", "noopener,noreferrer");
+            } catch {
+              // invalid URL - do nothing
+            }
+          }}
+        >
           <Share2 size={20} />
         </button>
       </div>

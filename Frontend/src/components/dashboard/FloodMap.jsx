@@ -88,7 +88,7 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
     createEarthquakeLayer();
 
     const floodLayer = new FeatureLayer({
-      url: "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS2/FeatureServer/0",
+      url: "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS22/FeatureServer/0",
       id: "floodLayer",
       title: "Flood Points",
       outFields: ["*"],

@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import FloodMap from "../components/dashboard/FloodMap";
-import DummyCharts from "../components/dashboard/DummyCharts";
+import Charts from "../components/dashboard/Charts";
 import WeatherPanel from "../components/dashboard/WeatherPanel";
 import InfoSidebar from "../components/dashboard/InfoSidebar";
-import { queryAllCountries } from "../utils/mapHelpers";
 import { fetchOpenMeteo } from "../services/weatherService";
 import { reverseGeocode, searchLocation } from "../services/geocodingService";
 import {
@@ -13,12 +12,7 @@ import {
 import "./Analyze.css";
 
 function Analyze() {
-  const [dataLayer, setDataLayer] = useState(null);
   const [mapView, setMapView] = useState(null);
-  const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const [selectedYear, setSelectedYear] = useState(2022);
-  const [isLoadingCountries, setIsLoadingCountries] = useState(true);
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
@@ -27,28 +21,11 @@ function Analyze() {
   const [earthquakeData, setEarthquakeData] = useState(null);
   const [nearestQuake, setNearestQuake] = useState(null);
 
-  useEffect(() => {
-    if (dataLayer && mapView) {
-      const loadCountries = async () => {
-        setIsLoadingCountries(true);
-        try {
-          const allCountries = await queryAllCountries(dataLayer);
-          setCountries(allCountries);
-        } catch (error) {
-          console.error("Error loading countries:", error);
-        } finally {
-          setIsLoadingCountries(false);
-        }
-      };
-      loadCountries();
-    }
-  }, [dataLayer, mapView]);
-
   // Fetch earthquake data on mount
   useEffect(() => {
     const loadEarthquakes = async () => {
       try {
-        const data = await fetchEarthquakes(30, 2.5);
+        const data = await fetchEarthquakes(30, 1.5);
         setEarthquakeData(data.features);
       } catch (error) {
         console.error("Failed to load earthquake data:", error);
@@ -57,7 +34,6 @@ function Analyze() {
     loadEarthquakes();
   }, []);
 
-  // Recompute nearest earthquake whenever selected point or dataset changes
   useEffect(() => {
     if (!selectedPoint || !earthquakeData) {
       setNearestQuake(null);
@@ -67,12 +43,11 @@ function Analyze() {
       selectedPoint.latitude,
       selectedPoint.longitude,
       earthquakeData,
-      250 // expand search radius to 250km for better coverage
+      150 
     );
     setNearestQuake(nearest);
   }, [selectedPoint, earthquakeData]);
 
-  // Handle point selection from map
   const handlePointSelect = async (coordinates) => {
     setSelectedPoint(coordinates);
     setWeatherLoading(true);
@@ -84,7 +59,6 @@ function Analyze() {
       );
       setWeatherData(data);
 
-      // Find nearest earthquake
       if (earthquakeData) {
         const nearest = findNearestEarthquake(
           coordinates.latitude,
@@ -95,7 +69,6 @@ function Analyze() {
         setNearestQuake(nearest);
       }
 
-      // Reverse geocode to human-readable place name via Open‑Meteo Geocoding API
       try {
         const label = await reverseGeocode(
           coordinates.latitude,
@@ -121,18 +94,15 @@ function Analyze() {
     }
   };
 
-  // Handle location search
   const handleSearch = async (query) => {
     try {
       const location = await searchLocation(query);
-      // Center map on searched location
       if (mapView) {
         mapView.goTo({
           center: [location.longitude, location.latitude],
           zoom: 10,
         });
       }
-      // Trigger point selection for the searched location
       setSelectedPoint({
         latitude: location.latitude,
         longitude: location.longitude,
@@ -150,7 +120,7 @@ function Analyze() {
   return (
     <div className="analyze-page">
       <div className="dashboard-container">
-        {/* Left Sidebar - Info & Stats */}
+        {/* Left Sidebar - Flood Prediction & Analysis */}
         <div className="left-sidebar-section">
           <InfoSidebar selectedPoint={selectedPoint} />
         </div>
@@ -178,7 +148,7 @@ function Analyze() {
 
         {/* Bottom Charts Section */}
         <div className="charts-section">
-          <DummyCharts weatherData={weatherData} />
+          <Charts weatherData={weatherData} />
         </div>
       </div>
     </div>

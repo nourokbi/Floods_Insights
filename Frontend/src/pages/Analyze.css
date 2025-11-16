@@ -1,6 +1,6 @@
 .analyze-page {
   width: 100%;
-  min-height: calc(100vh - 70px); /* Account for navbar height */
+  min-height: calc(100vh - 70px);
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--section-bg);
@@ -9,18 +9,10 @@
 
 .dashboard-container {
   width: 100%;
-
-  /* --- FIX: Replaced 'min-height: 100%' --- */
-  /* This makes the dashboard fill the parent's height */
   height: calc(100vh - 70px);
-
   display: grid;
   grid-template-columns: 360px 1fr 360px;
-
-  /* --- FIX: Replaced '600px 350px' --- */
-  /* '1fr' lets the map row grow to fill the screen */
   grid-template-rows: 1fr 350px;
-
   grid-template-areas:
     "left-sidebar map right-sidebar"
     "left-sidebar charts right-sidebar";
@@ -28,11 +20,10 @@
   position: relative;
 }
 
-/* Left Sidebar - Info & Stats */
 .left-sidebar-section {
   grid-area: left-sidebar;
   position: relative;
-  overflow-y: auto; /* This is correct for desktop */
+  overflow-y: auto;
   overflow-x: hidden;
   background: var(--section-bg);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
@@ -43,23 +34,18 @@
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Map Section - Center */
 .map-section {
   grid-area: map;
   position: relative;
   overflow: hidden;
   background: var(--section-bg);
   border-bottom: 1px solid var(--border-color);
-
-  /* --- FIX: Removed 'min-height: 600px' --- */
-  /* It's no longer needed with the '1fr' row */
 }
 
-/* Right Sidebar - Search & Controls */
 .right-sidebar-section {
   grid-area: right-sidebar;
   position: relative;
-  overflow-y: auto; /* This is correct for desktop */
+  overflow-y: auto;
   overflow-x: hidden;
   background: var(--section-bg);
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
@@ -70,7 +56,6 @@
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Charts Section - Bottom Center */
 .charts-section {
   grid-area: charts;
   position: relative;
@@ -80,78 +65,63 @@
   padding: 0px;
 }
 
-/* * =========================================
- * RESPONSIVE LAYOUTS
- * =========================================
-*/
-
-/* --- Desktop-first adjustments for smaller desktops --- */
 @media (max-width: 1600px) {
   .dashboard-container {
     grid-template-columns: 340px 1fr 340px;
-    grid-template-rows: 1fr 330px; /* Adjusted bottom row */
+    grid-template-rows: 1fr 330px;
   }
 }
 
 @media (max-width: 1400px) {
   .dashboard-container {
     grid-template-columns: 320px 1fr 320px;
-    grid-template-rows: 1fr 300px; /* Adjusted bottom row */
+    grid-template-rows: 1fr 300px;
   }
 }
 
-/*
- * --- BELOW 1200px: (Small Desktop / Large Tablet) ---
- * - Map on top
- * - Sidebars side-by-side
- * - Charts on bottom
-*/
 @media (max-width: 1200px) {
   .dashboard-container {
-    /* Set height to 'auto' so the page can scroll */
     height: auto;
     min-height: calc(100vh - 70px);
 
-    grid-template-columns: 1fr 1fr; /* 2 columns for sidebars */
-    grid-template-rows: 440px auto auto; /* Map (slightly shorter) | Sidebars | Charts (auto height) */
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 440px auto auto;
     grid-template-areas:
       "map map"
       "left-sidebar right-sidebar"
       "charts charts";
   }
 
-  /* --- FIX FOR UNWANTED SCROLLS --- */
   .left-sidebar-section,
   .right-sidebar-section {
-    overflow-y: visible; /* Removes the internal scrollbar */
+    overflow-y: visible;
     min-height: 400px;
-    height: auto; /* Allows them to grow with content */
+    height: auto;
     box-shadow: none;
     border-left: none;
     border-right: none;
     z-index: auto;
   }
 
-  /* Add a separator line between the sidebars */
   .left-sidebar-section {
     border-right: 1px solid var(--border-color);
   }
 
   .map-section {
     border-bottom: 1px solid var(--border-color);
-    min-height: 440px; /* Match the grid row */
+    min-height: 440px;
   }
 
   .charts-section {
     border-top: 1px solid var(--border-color);
-    min-height: 420px; /* Give stacked charts more space */
+    min-height: 420px;
   }
 }
 
 @media (max-width: 768px) {
   .dashboard-container {
     grid-template-columns: 1fr;
-    grid-template-rows: 38vh auto auto auto; /* Slightly reduce map height */
+    grid-template-rows: 38vh auto auto auto;
     grid-template-areas:
       "map"
       "left-sidebar"
@@ -160,13 +130,13 @@
   }
 
   .map-section {
-    min-height: 0; /* Use viewport height */
+    min-height: 0;
     border-bottom: 1px solid var(--border-color);
   }
 
   .left-sidebar-section {
-    display: block; /* Ensure it's visible when stacking */
-    overflow-y: visible; /* Avoid nested scroll */
+    display: block;
+    overflow-y: visible;
     height: auto;
     min-height: 300px;
     border-top: 1px solid var(--border-color);
@@ -174,7 +144,7 @@
   }
 
   .right-sidebar-section {
-    overflow-y: visible; /* Remove internal scroll; rely on page scroll */
+    overflow-y: visible;
     height: auto;
     min-height: 300px;
     border-top: 1px solid var(--border-color);
@@ -188,14 +158,11 @@
 
   .charts-section {
     border-top: none;
-    min-height: 440px; /* Taller to ensure stacked charts are fully visible */
-    max-height: none; /* Let content drive height */
+    min-height: 440px;
+    max-height: none;
   }
 }
 
-/*
- * --- BELOW 480px: (Small Mobile) ---
-*/
 @media (max-width: 480px) {
   .dashboard-container {
     grid-template-rows: 35vh auto auto;
@@ -206,7 +173,7 @@
   }
 
   .charts-section {
-    min-height: 380px; /* Keep adequate height on very small screens */
+    min-height: 380px;
     max-height: none;
   }
 }

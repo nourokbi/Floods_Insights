@@ -17,7 +17,7 @@ function InfoSidebar({ selectedPoint }) {
       setStatsError(null);
       try {
         const base =
-          "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS2/FeatureServer/0/query";
+          "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS22/FeatureServer/0/query";
         const outStatistics = [
           {
             statisticType: "count",
@@ -79,7 +79,18 @@ function InfoSidebar({ selectedPoint }) {
         const resp = await fetch(url.toString());
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const json = await resp.json();
-        setPrediction(json?.flood_prediction || null);
+        // API returns a top-level `risk_result` object (see example). Normalize
+        // prediction to contain `risk_level`, `message` and optional `risk_score`.
+        const rr = json?.risk_result || json?.riskResult || null;
+        if (rr) {
+          setPrediction({
+            risk_level: rr.risk_level || rr.riskLevel || rr.level || null,
+            message: rr.message || rr.msg || null,
+            risk_score: rr.risk_score ?? rr.score ?? null,
+          });
+        } else {
+          setPrediction(null);
+        }
       } catch (e) {
         console.error("Prediction fetch failed:", e);
         setPrediction(null);
@@ -114,7 +125,9 @@ function InfoSidebar({ selectedPoint }) {
           <div className="alerts-list">
             <div className="alert-item">
               <div className="alert-header">
-                <span className="alert-region">Select a location</span>
+                <span className="alert-region">
+                  {selectedPoint?.name || "Select a location"}
+                </span>
                 <span className="alert-badge">Idle</span>
               </div>
               <div className="alert-time">Click the map to analyze risk.</div>
@@ -132,7 +145,9 @@ function InfoSidebar({ selectedPoint }) {
           <div className="alerts-list">
             <div className="alert-item">
               <div className="alert-header">
-                <span className="alert-region">Flood Risk</span>
+                <span className="alert-region">
+                  {selectedPoint?.name || "Flood Risk"}
+                </span>
                 <span
                   className={`alert-badge ${riskBadgeClass(
                     prediction.risk_level
@@ -142,10 +157,7 @@ function InfoSidebar({ selectedPoint }) {
                 </span>
               </div>
               <div className="alert-time">
-                {prediction.message || "Prediction"} •{" "}
-                {prediction.probability != null
-                  ? `${(prediction.probability * 100).toFixed(1)}%`
-                  : "N/A"}
+                {prediction.message || "Prediction"}
               </div>
             </div>
           </div>
@@ -156,7 +168,7 @@ function InfoSidebar({ selectedPoint }) {
         )}
       </div>
 
-      {/* Historical Overview (dataset-wide statistics) */}
+      {/* Historical Overview */}
       <div className="alerts-section section-block">
         <h3 className="section-title">Historical Overview</h3>
         {statsLoading ? (

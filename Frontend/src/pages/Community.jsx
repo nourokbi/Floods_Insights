@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -9,102 +9,190 @@ import "./Community.css";
 import RequireAuth from "../components/Auth/RequireAuth";
 export default function Community() {
   const navigate = useNavigate();
-  // LOCAL state for now (will be replaced by API later)
-  const [posts, setPosts] = useState([
-    // keep small example data so UI renders instantly
-    {
-      id: "1",
-      title: "Heavy Floods Hit Northern Region — Stay Safe Everyone!",
-      description:
-        "The recent heavy rainfall has caused severe flooding across the northern region.",
-      location: "Nile Delta, Egypt",
-      category: "flood",
-      author: "Sarah Khaled",
-      timestamp: "2 hours ago",
-      likes: 8,
-      image:
-        "https://images.unsplash.com/photo-1518281361980-b26bfd556770?auto=format&fit=crop&w=1200&q=80",
-      comments: [
-        {
-          id: "c1",
-          author: "Omar Ali",
-          content: "Stay safe everyone!",
-          timestamp: "1 hour ago",
-        },
-      ],
-    },
-    {
-      id: "2",
-      title: "Community Effort: Volunteers Help Clean Up After Floods",
-      description:
-        "Volunteers came together to help clear debris and support families.",
-      location: "Aswan, Egypt",
-      category: "flood",
-      author: "Mohamed Hassan",
-      timestamp: "5 hours ago",
-      likes: 15,
-      image:
-        "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1200&q=80",
-      comments: [
-        {
-          id: "c3",
-          author: "Nour Okbi",
-          content: "Proud of our community!",
-          timestamp: "3 hours ago",
-        },
-      ],
-    },
-  ]);
+  // posts loaded from API
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [expandedComments, setExpandedComments] = useState(new Set());
   const { token, user } = useAuth();
   const location = useLocation();
 
-  // --- Fetch posts from API on mount using Axios ---
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await axios.get(
-          "https://kartak-demo-od0f.onrender.com/api/reports"
-        );
+  const mountedRef = useRef(true);
 
-        const data = res.data;
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const res = await axios.get(
+        "https://kartak-demo-od0f.onrender.com/api/reports"
+      );
 
-        if (data.success) {
-          const apiPosts = data.data.reports.map((item) => ({
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            location: item.location_name,
-            category: item.disaster_type,
-            author: item.author_name,
-            timestamp: new Date(item.created_at).toLocaleString(),
-            likes: Number(item.likes_count) || 0,
-            comments: [], // connect later
-            image: item.images?.length ? item.images[0] : null,
-          }));
+      const data = res.data;
 
-          setPosts(apiPosts);
+      if (!mountedRef.current) return;
+
+      if (data?.success) {
+        const apiPosts = data.data.reports.map((item) => ({
+          id: String(item.id),
+          title: item.title,
+          description: item.description,
+          location: item.location_name,
+          category: item.disaster_type,
+          author: item.author_name,
+          timestamp: new Date(item.created_at).toLocaleString(),
+          likes: Number(item.likes_count) || 0,
+          comments: [], // will populate immediately after
+          image: item.images?.length ? item.images[0] : null,
+        }));
+
+        setPosts(apiPosts);
+
+        // Fetch comments for each post so counts are available immediately
+        try {
+          const commentFetches = apiPosts.map((p) =>
+            axios
+              .get(
+                `https://kartak-demo-od0f.onrender.com/api/comments/report/${p.id}`,
+                {
+                  headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
+                }
+              )
+              .then((r) => ({ id: p.id, data: r.data }))
+              .catch((e) => {
+                console.error("Error fetching comments for post", p.id, e);
+                return { id: p.id, data: null };
+              })
+          );
+
+          const commentsResults = await Promise.all(commentFetches);
+
+          // attach comments to posts
+          setPosts((prev) =>
+            prev.map((p) => {
+              const found = commentsResults.find((c) => c.id === p.id);
+              if (found && found.data?.success) {
+                const comments = (found.data.data.comments || []).map((c) => ({
+                  id: String(c.id),
+                  author: c.user_name || c.user_name || "Unknown",
+                  content: c.comment_text,
+                  timestamp: new Date(c.created_at).toLocaleString(),
+                }));
+                return { ...p, comments };
+              }
+              return p;
+            })
+          );
+        } catch (err) {
+          console.error("Error fetching comments for posts:", err);
         }
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
 
+        // if authenticated, also load user's bookmarks to mark saved posts
+        if (token) {
+          try {
+            const bookmarked = await axios.get(
+              "https://kartak-demo-od0f.onrender.com/api/bookmarks/my?limit=1000",
+              {
+                headers: {
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              }
+            );
+
+            if (bookmarked?.data?.success) {
+              const bookmarkedIds = new Set(
+                bookmarked.data.data.bookmarks.map((b) => String(b.report_id))
+              );
+              setSavedPosts(bookmarkedIds);
+            }
+          } catch (err) {
+            console.error("Error fetching user bookmarks:", err);
+          }
+          // also fetch likes for the current user so liked posts show active
+          try {
+            const lk = await axios.get(
+              "https://kartak-demo-od0f.onrender.com/api/likes/my?limit=1000",
+              {
+                headers: {
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              }
+            );
+
+            if (lk?.data?.success) {
+              const likedIds = new Set(
+                lk.data.data.likes.map((l) => String(l.report_id))
+              );
+              setLikedPosts(likedIds);
+            }
+          } catch (err) {
+            console.error("Error fetching user likes:", err);
+          }
+        }
+      } else {
+        setPosts([]);
+        setFetchError(data?.message || "Failed to load posts");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      if (!mountedRef.current) return;
+      setPosts([]);
+      setFetchError(error?.message || "Failed to load posts");
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    mountedRef.current = true;
     fetchPosts();
-  }, []);
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [fetchPosts]);
 
   const handleAddPost = async (formData) => {
     try {
+      // Accept either FormData (from AddPostForm) or a plain object
+      let payload = formData;
+      if (!(formData instanceof FormData)) {
+        const fd = new FormData();
+        fd.append("title", formData.title || "");
+        fd.append("description", formData.description || "");
+        fd.append(
+          "location_name",
+          formData.location_name || formData.location || ""
+        );
+        fd.append(
+          "disaster_type",
+          formData.disaster_type || formData.category || "flood"
+        );
+        fd.append(
+          "longitude",
+          formData.longitude ? String(formData.longitude) : "0"
+        );
+        fd.append(
+          "latitude",
+          formData.latitude ? String(formData.latitude) : "0"
+        );
+        fd.append("status", formData.status || "active");
+        fd.append("link", formData.link || "");
+        if (formData.images && Array.isArray(formData.images)) {
+          formData.images.forEach((f) => fd.append("images", f));
+        }
+        payload = fd;
+      }
+
+      const headers = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
       const res = await axios.post(
         "https://kartak-demo-od0f.onrender.com/api/reports",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        payload,
+        { headers }
       );
 
       const data = res.data;
@@ -114,30 +202,37 @@ export default function Community() {
 
         // Format it into your UI post structure
         const formatted = {
-          id: newPost.id,
+          id: String(newPost.id),
           title: newPost.title,
           description: newPost.description,
           location: newPost.location_name,
           category: newPost.disaster_type,
-          author: newPost.author_name || "You",
+          author:
+            (user && (user.name || user.username)) ||
+            newPost.author_name ||
+            "You",
+          authorId: user?.id ?? newPost.author_id ?? null,
+          author_profile: user ?? null,
           timestamp: new Date(newPost.created_at).toLocaleString(),
-          likes: 0,
+          likes: Number(newPost.likes_count) || 0,
           comments: [],
           image: newPost.images?.length ? newPost.images[0] : null,
+          link: newPost.link || "",
+          latitude: String(newPost.latitude ?? newPost.lat ?? "0"),
+          longitude: String(newPost.longitude ?? newPost.lon ?? "0"),
         };
 
         setPosts((prev) => [formatted, ...prev]);
-        return formatted; // return created formatted post to caller
+        return formatted;
       }
 
       throw new Error(data?.message || "Failed to create post");
     } catch (error) {
       console.error("Error adding post:", error);
-      // rethrow so callers (AddPostForm) can show inline errors
       throw error;
     }
   };
-  // --- Handlers (will map to API calls later) ---
+  // Handlers (will map to API calls later)
   const handleLike = async (postId) => {
     if (!user || !token) {
       // redirect to login preserving location
@@ -227,18 +322,105 @@ export default function Community() {
   };
   const handleAddComment = (postId, commentText) => {
     if (!commentText) return;
+    // If not authenticated, redirect to login
+    if (!user || !token) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    // Optimistic comment with temporary id
+    const tempId = `tmp-${Date.now()}`;
     const newComment = {
-      id: `c${Date.now()}`,
-      author: "You",
+      id: tempId,
+      author: (user && (user.name || user.username)) || "You",
       content: commentText,
       timestamp: "Just now",
+      pending: true,
     };
-    2;
+
     setPosts((prev) =>
       prev.map((p) =>
         p.id === postId ? { ...p, comments: [...p.comments, newComment] } : p
       )
     );
+
+    // Send to server
+    (async () => {
+      try {
+        const res = await axios.post(
+          "https://kartak-demo-od0f.onrender.com/api/comments",
+          { report_id: Number(postId), comment_text: commentText },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+
+        const data = res.data;
+        if (data?.success && data.data?.comment) {
+          const serverComment = data.data.comment;
+          // normalize comment shape for UI
+          const formatted = {
+            id: String(serverComment.id),
+            author:
+              serverComment.author_name ||
+              (user && (user.name || user.username)) ||
+              "You",
+            content:
+              serverComment.comment_text ||
+              serverComment.content ||
+              commentText,
+            timestamp: new Date(
+              serverComment.created_at || serverComment.createdAt || Date.now()
+            ).toLocaleString(),
+          };
+
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    comments: p.comments.map((c) =>
+                      c.id === tempId ? formatted : c
+                    ),
+                  }
+                : p
+            )
+          );
+        } else {
+          // server didn't return comment; remove temp and add a fallback final comment
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    comments: p.comments.map((c) =>
+                      c.id === tempId
+                        ? {
+                            ...c,
+                            pending: false,
+                          }
+                        : c
+                    ),
+                  }
+                : p
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Error posting comment:", err);
+        // revert optimistic comment on error
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, comments: p.comments.filter((c) => c.id !== tempId) }
+              : p
+          )
+        );
+      }
+    })();
   };
 
   const mostLikedPosts = [...posts]
@@ -263,6 +445,27 @@ export default function Community() {
         </header>
         <div className="community-container">
           <main className="posts-section">
+            {/* Loading / error / posts */}
+            {loading ? (
+              <div className="posts-loading">Loading posts…</div>
+            ) : fetchError ? (
+              <div className="posts-error">
+                <p>Failed to load posts: {fetchError}</p>
+                <button
+                  className="refresh-button"
+                  onClick={() => {
+                    fetchPosts();
+                  }}
+                >
+                  Refresh
+                </button>
+              </div>
+            ) : null}
+
+            {!loading && !fetchError && posts.length === 0 && (
+              <div className="no-posts">No posts yet.</div>
+            )}
+
             <AddPostForm onAddPost={handleAddPost} />
             {posts.map((post) => (
               <PostCard
