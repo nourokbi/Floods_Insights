@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
@@ -13,6 +13,8 @@ import Zoom from "@arcgis/core/widgets/Zoom";
 import { zoomToCountry } from "../../utils/mapHelpers";
 import { fetchEarthquakes } from "../../services/earthquakeService";
 import "./FloodMap.css";
+import MapLegend from "./MapLegend";
+import BasemapSwitcher from "./BasemapSwitcher";
 import "@arcgis/core/assets/esri/themes/light/main.css";
 // import "@arcgis/core/assets/esri/themes/dark/main.css";
 
@@ -23,16 +25,19 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
   const isInitialized = useRef(false);
   const pointGraphicsLayerRef = useRef(null);
   const earthquakeLayerRef = useRef(null);
+  const floodLayerRef = useRef(null);
+  const [basemapId, setBasemapId] = useState("streets-vector");
+  const [showFlood, setShowFlood] = useState(true);
+  const [showQuakes, setShowQuakes] = useState(true);
 
   useEffect(() => {
     if (!mapDiv.current || isInitialized.current) return;
 
     isInitialized.current = true;
     let isMounted = true;
+    let resizeObserver = null;
 
-    const map = new Map({
-      basemap: "streets-vector",
-    });
+    const map = new Map({ basemap: basemapId });
 
     mapRef.current = map;
 
@@ -41,6 +46,7 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
       id: "pointLayer",
       title: "Analysis Points",
     });
+    pointGraphicsLayer.visible = true;
     map.add(pointGraphicsLayer);
     pointGraphicsLayerRef.current = pointGraphicsLayer;
 
@@ -77,6 +83,7 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
           popupEnabled: false,
         });
 
+        earthquakeLayer.visible = showQuakes;
         map.add(earthquakeLayer);
         earthquakeLayerRef.current = earthquakeLayer;
       } catch (error) {
@@ -85,6 +92,28 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
     };
 
     createEarthquakeLayer();
+
+    const floodLayer = new FeatureLayer({
+      url: "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS22/FeatureServer/0",
+      id: "floodLayer",
+      title: "Flood Points",
+      outFields: ["*"],
+      popupEnabled: true,
+      popupTemplate: {
+        title: "Flood Observation #{OBJECTID}",
+        content:
+          "<ul style='margin:0;padding-left:1rem'>" +
+          "<li><b>Latitude:</b> {Latitude}</li>" +
+          "<li><b>Longitude:</b> {Longitude}</li>" +
+          "<li><b>Date:</b> {date}</li>" +
+          "<li><b>Duration (days):</b> {flood_duration}</li>" +
+          "<li><b>Intensity:</b> {flood_intensity}</li>" +
+          "</ul>",
+      },
+    });
+    floodLayer.visible = showFlood;
+    map.add(floodLayer);
+    floodLayerRef.current = floodLayer;
 
     const view = new MapView({
       container: mapDiv.current,
@@ -108,6 +137,21 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
         // Remove default attribution
         view.ui.remove("attribution");
 
+        // Observe the map container for size changes and notify the view to resize
+        if (mapDiv.current && view) {
+          try {
+            resizeObserver = new ResizeObserver(() => {
+              try {
+                view.resize();
+              } catch (e) {
+                // ignore resize errors
+              }
+            });
+            resizeObserver.observe(mapDiv.current);
+          } catch (e) {
+            // ResizeObserver may not be supported in some environments
+          }
+        }
         // Add Zoom widget (+ and - buttons)
         const zoomWidget = new Zoom({
           view: view,
@@ -153,6 +197,20 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
               (r) => r.graphic.layer && r.graphic.layer.id === "earthquakeLayer"
             );
             // We intentionally do nothing special for quake hits; fall through to add point
+
+            // 2.5) If a flood feature was clicked, show popup and select it
+            const floodHit = results.find(
+              (r) => r.graphic?.layer && r.graphic.layer.id === "floodLayer"
+            );
+            if (floodHit) {
+              const featPoint = floodHit.graphic.geometry;
+              // Only open the popup. Do not place analysis marker to avoid overlap.
+              view.popup.open({
+                features: [floodHit.graphic],
+                location: featPoint,
+              });
+              return;
+            }
 
             // 3) Handle country clicks only when a feature has COUNTRY attribute
             const countryHit = results.find(
@@ -223,27 +281,6 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
         console.error("Error initializing view:", error);
       });
 
-    // TODO: Replace with flood-specific feature layer URL
-    // const floodLayer = new FeatureLayer({
-    //   url: "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/WorldPopulationFrom_1970_To_2022/FeatureServer/0",
-    //   outFields: ["*"],
-    //   popupEnabled: false,
-    // });
-
-    // map.add(floodLayer);
-
-    // floodLayer
-    //   .when(() => {
-    //     if (!isMounted) return;
-    //     if (onLayerLoad) {
-    //       onLayerLoad(floodLayer);
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     if (!isMounted) return;
-    //     console.error("Error loading layer:", error);
-    //   });
-
     return () => {
       isMounted = false;
       isInitialized.current = false;
@@ -253,6 +290,12 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
         viewRef.current.destroy();
         viewRef.current = null;
       }
+      if (resizeObserver) {
+        try {
+          resizeObserver.disconnect();
+        } catch (e) {}
+        resizeObserver = null;
+      }
       if (mapRef.current) {
         mapRef.current.destroy();
         mapRef.current = null;
@@ -261,7 +304,38 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={mapDiv} className="map-view"></div>;
+  // Handle basemap switching from overlay buttons
+  const handleBasemapChange = (id) => {
+    setBasemapId(id);
+    if (mapRef.current) {
+      mapRef.current.basemap = id;
+    }
+  };
+
+  const handleLayerToggle = (key) => {
+    if (key === "flood") {
+      const next = !showFlood;
+      setShowFlood(next);
+      if (floodLayerRef.current) floodLayerRef.current.visible = next;
+    }
+    if (key === "quakes") {
+      const next = !showQuakes;
+      setShowQuakes(next);
+      if (earthquakeLayerRef.current) earthquakeLayerRef.current.visible = next;
+    }
+  };
+
+  return (
+    <div ref={mapDiv} className="map-view">
+      {/* Overlays */}
+      <MapLegend
+        showFlood={showFlood}
+        showQuakes={showQuakes}
+        onToggle={handleLayerToggle}
+      />
+      <BasemapSwitcher current={basemapId} onChange={handleBasemapChange} />
+    </div>
+  );
 }
 
 export default FloodMap;

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { loginApi, registerApi, logoutApi } from "../services/authService";
+import { setAuthToken } from "../services/apiClient";
 
 const AuthContext = createContext(null);
 
@@ -15,7 +16,11 @@ export function AuthProvider({ children }) {
         const parsed = JSON.parse(saved);
         setUser(parsed.user || null);
         setToken(parsed.token || null);
-      } catch {}
+        // Ensure axios default Authorization header is set for persisted sessions
+        if (parsed.token) setAuthToken(parsed.token);
+      } catch {
+        // ignore parsing errors
+      }
     }
   }, []);
 
@@ -35,6 +40,8 @@ export function AuthProvider({ children }) {
       setUser(next.user);
       setToken(next.token);
       persist(next);
+      // set axios Authorization header for subsequent requests
+      if (next.token) setAuthToken(next.token);
       console.log("User state after login:", next.user);
       return next;
     } catch (error) {
@@ -45,10 +52,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, role = "admin") => {
     setLoading(true);
     try {
-      const res = await registerApi({ name, email, password });
+      const res = await registerApi({ name, email, password, role });
       console.log("Register API response:", res);
       const next = {
         user: res.data?.user || res.user || { name, email },
@@ -57,6 +64,7 @@ export function AuthProvider({ children }) {
       setUser(next.user);
       setToken(next.token);
       persist(next);
+      if (next.token) setAuthToken(next.token);
       console.log("User state after register:", next.user);
       return next;
     } catch (error) {
@@ -73,10 +81,13 @@ export function AuthProvider({ children }) {
         await logoutApi(token);
       }
     } catch (e) {
+      console.error("Logout error:", e);
       // ignore network/auth errors on logout to ensure client clears state
     } finally {
       setUser(null);
       setToken(null);
+      // clear axios default header
+      setAuthToken(null);
       localStorage.removeItem("fi_auth");
     }
   };

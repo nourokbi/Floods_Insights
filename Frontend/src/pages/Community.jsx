@@ -1,139 +1,408 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Share2,
-  TrendingUp,
-  Clock,
-  MapPin,
-  Image as ImageIcon,
-  Send,
-} from "lucide-react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import axios from "axios";
+import { API_BASE } from "../config/api";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import AddPostForm from "../components/Community/AddPostForm";
+import PostCard from "../components/Community/PostCard";
+import Sidebar from "../components/Community/Sidebar";
+import ConfirmModal from "../components/UI/ConfirmModal";
+import { useToast } from "../components/UI/ToastProvider";
 import "./Community.css";
+import RequireAuth from "../components/Auth/RequireAuth";
 
 export default function Community() {
   const navigate = useNavigate();
-
-  // Dummy posts
-  const [posts, setPosts] = useState([
-    {
-      id: "1",
-      title: "Heavy Floods Hit Northern Region — Stay Safe Everyone!",
-      description:
-        "The recent heavy rainfall has caused severe flooding across the northern region. Many roads are blocked, and several villages are currently isolated. If you live nearby, avoid traveling and stay on higher ground. Emergency teams are on-site helping evacuate residents.",
-      location: "Nile Delta, Egypt",
-      category: "flood",
-      author: "Sarah Khaled",
-      timestamp: "2 hours ago",
-      likes: 8,
-      image:
-        "https://images.unsplash.com/photo-1518281361980-b26bfd556770?auto=format&fit=crop&w=1200&q=80",
-      comments: [
-        {
-          id: "c1",
-          author: "Omar Ali",
-          content: "Stay safe everyone! Hope the water levels drop soon.",
-          timestamp: "1 hour ago",
-        },
-        {
-          id: "c2",
-          author: "Leila Ahmed",
-          content: "We need more emergency boats here. It's really bad.",
-          timestamp: "45 minutes ago",
-        },
-      ],
-    },
-    {
-      id: "2",
-      title: "Community Effort: Volunteers Help Clean Up After Floods",
-      description:
-        "After last week’s floods, dozens of volunteers came together to help clear debris, distribute food, and support affected families. The community spirit has been incredible. Please share if you want to join the next cleanup drive scheduled for this weekend!",
-      location: "Aswan, Egypt",
-      category: "flood",
-      author: "Mohamed Hassan",
-      timestamp: "5 hours ago",
-      likes: 15,
-      image:
-        "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1200&q=80",
-      comments: [
-        {
-          id: "c3",
-          author: "Nour Okbi",
-          content: "Proud of our community! Count me in for the next event.",
-          timestamp: "3 hours ago",
-        },
-        {
-          id: "c4",
-          author: "Youssef Kamal",
-          content: "Amazing effort by everyone involved 👏",
-          timestamp: "2 hours ago",
-        },
-      ],
-    },
-  ]);
-
+  // posts loaded from API
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [expandedComments, setExpandedComments] = useState(new Set());
-  const [commentInputs, setCommentInputs] = useState({});
-  const [newPost, setNewPost] = useState({
-    title: "",
-    description: "",
-    location: "",
-    author: "You",
-    image: "",
-  });
-  const [imagePreview, setImagePreview] = useState(null);
-  const [fetchedPosts, setFetchedPosts] = useState([]);
-useEffect(()  => {
-    // Simulate fetching posts from an API
-    const fetchPosts = async () => {
-      
-      setFetchedPosts(response);
-    };
-    fetchPosts();
-  }, []);
+  const { token, user } = useAuth();
+  const location = useLocation();
 
-  // Like handler
-  const handleLike = (postId) => {
+  const mountedRef = useRef(true);
+  const { showToast } = useToast();
+
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const res = await axios.get(`${API_BASE}/api/reports`);
+      const data = res.data;
+      if (!mountedRef.current) return;
+
+      if (data?.success) {
+        const apiPosts = data.data.reports.map((item) => ({
+          id: String(item.id),
+          title: item.title,
+          description: item.description,
+          location: item.location_name,
+          category: item.disaster_type,
+          author: item.author_name,
+          authorId: String(
+            item.author_id ?? item.authorId ?? item.user_id ?? item.userId ?? ""
+          ),
+          timestamp: new Date(item.created_at).toLocaleString(),
+          likes: Number(item.likes_count) || 0,
+          comments: [], // will populate immediately after
+          image: item.images?.length ? item.images[0] : null,
+        }));
+
+        setPosts(apiPosts);
+
+        try {
+          const commentFetches = apiPosts.map((p) =>
+            axios
+              .get(`${API_BASE}/api/comments/report/${p.id}`, {
+                headers: {
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              })
+              .then((r) => ({ id: p.id, data: r.data }))
+              .catch((e) => {
+                console.error("Error fetching comments for post", p.id, e);
+                return { id: p.id, data: null };
+              })
+          );
+
+          const commentsResults = await Promise.all(commentFetches);
+
+          // attach comments to posts
+          setPosts((prev) =>
+            prev.map((p) => {
+              const found = commentsResults.find((c) => c.id === p.id);
+              if (found && found.data?.success) {
+                const comments = (found.data.data.comments || []).map((c) => ({
+                  id: String(c.id),
+                  author: c.user_name || c.user_name || "Unknown",
+                  content: c.comment_text,
+                  timestamp: new Date(c.created_at).toLocaleString(),
+                }));
+                return { ...p, comments };
+              }
+              return p;
+            })
+          );
+        } catch (err) {
+          console.error("Error fetching comments for posts:", err);
+        }
+
+        // if authenticated, also load user's bookmarks to mark saved posts
+        if (token) {
+          try {
+            const bookmarked = await axios.get(
+              `${API_BASE}/api/bookmarks/my?limit=1000`,
+              {
+                headers: {
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+              }
+            );
+
+            if (bookmarked?.data?.success) {
+              const bookmarkedIds = new Set(
+                bookmarked.data.data.bookmarks.map((b) => String(b.report_id))
+              );
+              setSavedPosts(bookmarkedIds);
+            }
+          } catch (err) {
+            console.error("Error fetching user bookmarks:", err);
+          }
+          // also fetch likes for the current user so liked posts show active
+          try {
+            const lk = await axios.get(`${API_BASE}/api/likes/my?limit=1000`, {
+              headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+            });
+
+            if (lk?.data?.success) {
+              const likedIds = new Set(
+                lk.data.data.likes.map((l) => String(l.report_id))
+              );
+              setLikedPosts(likedIds);
+            }
+          } catch (err) {
+            console.error("Error fetching user likes:", err);
+          }
+        }
+      } else {
+        setPosts([]);
+        setFetchError(data?.message || "Failed to load posts");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      if (!mountedRef.current) return;
+      setPosts([]);
+      setFetchError(error?.message || "Failed to load posts");
+    } finally {
+      if (mountedRef.current) setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    fetchPosts();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [fetchPosts]);
+
+  // helper to determine ownership across multiple possible id fields
+  const isOwnerOf = (post) => {
+    if (!user) return false;
+    const uid = String(
+      user.id ?? user.user_id ?? user.userId ?? user._id ?? ""
+    ).trim();
+    const aid = String(
+      post.authorId ?? post.author_id ?? post.user_id ?? post.userId ?? ""
+    ).trim();
+    if (uid && aid && uid === aid) return true;
+    // fallback: match by display name if IDs are not available/consistent
+    const uname = String(
+      user.name ?? user.username ?? user.user_name ?? ""
+    ).trim();
+    const pauthor = String(
+      post.author ?? post.author_name ?? post.user_name ?? ""
+    ).trim();
+    if (uname && pauthor && uname === pauthor) return true;
+    return false;
+  };
+
+  const handleAddPost = async (formData) => {
+    try {
+      // Accept either FormData (from AddPostForm) or a plain object
+      let payload = formData;
+      if (!(formData instanceof FormData)) {
+        const fd = new FormData();
+        fd.append("title", formData.title || "");
+        fd.append("description", formData.description || "");
+        fd.append(
+          "location_name",
+          formData.location_name || formData.location || ""
+        );
+        fd.append(
+          "disaster_type",
+          formData.disaster_type || formData.category || "flood"
+        );
+        fd.append(
+          "longitude",
+          formData.longitude ? String(formData.longitude) : "0"
+        );
+        fd.append(
+          "latitude",
+          formData.latitude ? String(formData.latitude) : "0"
+        );
+        fd.append("status", formData.status || "active");
+        // Do not append author fields; backend derives author from token
+        fd.append("link", formData.link || "");
+        if (formData.images && Array.isArray(formData.images)) {
+          formData.images.forEach((f) => fd.append("images", f));
+        }
+        payload = fd;
+      }
+
+      const headers = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await axios.post(`${API_BASE}/api/reports`, payload, {
+        headers,
+      });
+
+      const data = res.data;
+
+      if (data.success) {
+        const newPost = data.data.report; // returned post from API
+
+        // Format it into your UI post structure
+        const formatted = {
+          id: String(newPost.id),
+          title: newPost.title,
+          description: newPost.description,
+          location: newPost.location_name,
+          category: newPost.disaster_type,
+          author:
+            (user && (user.name || user.username)) ||
+            newPost.author_name ||
+            "You",
+          authorId: String(
+            user?.id ??
+              newPost.author_id ??
+              newPost.authorId ??
+              newPost.user_id ??
+              newPost.userId ??
+              ""
+          ),
+          author_profile: user ?? null,
+          timestamp: new Date(newPost.created_at).toLocaleString(),
+          likes: Number(newPost.likes_count) || 0,
+          comments: [],
+          image: newPost.images?.length ? newPost.images[0] : null,
+          link: newPost.link || "",
+          latitude: String(newPost.latitude ?? newPost.lat ?? "0"),
+          longitude: String(newPost.longitude ?? newPost.lon ?? "0"),
+        };
+
+        setPosts((prev) => [formatted, ...prev]);
+        showToast({ message: "Post added", type: "success", duration: 3000 });
+        return formatted;
+      }
+
+      throw new Error(data?.message || "Failed to create post");
+    } catch (error) {
+      console.error("Error adding post:", error);
+      if (error?.response?.data)
+        console.error("Server response:", error.response.data);
+      showToast({
+        message: "Failed to add post",
+        type: "error",
+        duration: 3000,
+      });
+      throw error;
+    }
+  };
+
+  // confirmation modal state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState(null);
+
+  const openConfirmDelete = (postId) => {
+    if (!user || !token) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+    setPostToDelete(postId);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    const postId = postToDelete;
+    setConfirmOpen(false);
+    setPostToDelete(null);
+    try {
+      await axios.delete(`${API_BASE}/api/reports/${postId}`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      showToast({ message: "Post deleted", type: "error", duration: 3000 });
+    } catch (err) {
+      console.error("Error deleting post:", err);
+      showToast({
+        message: "Failed to delete post",
+        type: "error",
+        duration: 3000,
+      });
+    }
+  };
+  // Handlers (will map to API calls later)
+  const handleLike = async (postId) => {
+    if (!user || !token) {
+      // redirect to login preserving location
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    // optimistic update
     const updated = new Set(likedPosts);
+    const willLike = !updated.has(postId);
+    if (willLike) updated.add(postId);
+    else updated.delete(postId);
+
     setPosts((prev) =>
       prev.map((p) =>
         p.id === postId
-          ? { ...p, likes: updated.has(postId) ? p.likes - 1 : p.likes + 1 }
+          ? { ...p, likes: willLike ? p.likes + 1 : Math.max(0, p.likes - 1) }
           : p
       )
     );
-    updated.has(postId) ? updated.delete(postId) : updated.add(postId);
     setLikedPosts(updated);
-  };
 
-  // Save handler
-  const handleSave = (postId) => {
+    try {
+      await axios.post(
+        `${API_BASE}/api/likes/toggle`,
+        { report_id: Number(postId) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      // revert optimistic update on error
+      const revert = new Set(likedPosts);
+      if (willLike) revert.delete(postId);
+      else revert.add(postId);
+      setLikedPosts(revert);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, likes: willLike ? Math.max(0, p.likes - 1) : p.likes + 1 }
+            : p
+        )
+      );
+    }
+  };
+  const handleSave = async (postId) => {
+    if (!user || !token) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    // optimistic toggle
     const updated = new Set(savedPosts);
-    updated.has(postId) ? updated.delete(postId) : updated.add(postId);
+    const willSave = !updated.has(postId);
+    if (willSave) updated.add(postId);
+    else updated.delete(postId);
     setSavedPosts(updated);
-  };
 
-  // Toggle comments
+    try {
+      await axios.post(
+        `${API_BASE}/api/bookmarks/toggle`,
+        { report_id: Number(postId) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Error toggling bookmark:", err);
+      // revert
+      const revert = new Set(savedPosts);
+      if (willSave) revert.delete(postId);
+      else revert.add(postId);
+      setSavedPosts(revert);
+    }
+  };
   const toggleComments = (postId) => {
     const updated = new Set(expandedComments);
     updated.has(postId) ? updated.delete(postId) : updated.add(postId);
     setExpandedComments(updated);
   };
-
-  // Add comment
-  const handleAddComment = (postId) => {
-    const commentText = commentInputs[postId]?.trim();
+  const handleAddComment = (postId, commentText) => {
     if (!commentText) return;
+    // If not authenticated, redirect to login
+    if (!user || !token) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
 
+    // Optimistic comment with temporary id
+    const tempId = `tmp-${Date.now()}`;
     const newComment = {
-      id: `c${Date.now()}`,
-      author: "You",
+      id: tempId,
+      author: (user && (user.name || user.username)) || "You",
       content: commentText,
       timestamp: "Just now",
+      pending: true,
     };
 
     setPosts((prev) =>
@@ -142,296 +411,162 @@ useEffect(()  => {
       )
     );
 
-    setCommentInputs({ ...commentInputs, [postId]: "" });
-  };
+    // Send to server
+    (async () => {
+      try {
+        const res = await axios.post(
+          `${API_BASE}/api/comments`,
+          { report_id: Number(postId), comment_text: commentText },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
 
-  // Handle new post creation
-  const handleAddPost = (e) => {
-    e.preventDefault();
-    if (!newPost.title || !newPost.description || !newPost.location)
-      return alert("Please fill in all fields except image (optional).");
+        const data = res.data;
+        if (data?.success && data.data?.comment) {
+          const serverComment = data.data.comment;
+          // normalize comment shape for UI
+          const formatted = {
+            id: String(serverComment.id),
+            author:
+              serverComment.author_name ||
+              (user && (user.name || user.username)) ||
+              "You",
+            content:
+              serverComment.comment_text ||
+              serverComment.content ||
+              commentText,
+            timestamp: new Date(
+              serverComment.created_at || serverComment.createdAt || Date.now()
+            ).toLocaleString(),
+          };
 
-    const post = {
-      id: `${Date.now()}`,
-      title: newPost.title,
-      description: newPost.description,
-      location: newPost.location,
-      category: newPost.category,
-      author: newPost.author,
-      timestamp: "Just now",
-      likes: 0,
-      comments: [],
-      image: imagePreview || "",
-    };
-
-    setPosts([post, ...posts]);
-    setNewPost({
-      title: "",
-      description: "",
-      location: "",
-      category: "flood",
-      author: "You",
-      image: "",
-    });
-    setImagePreview(null);
-  };
-
-  // Image upload preview
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) setImagePreview(URL.createObjectURL(file));
-  };
-
-  const getCategoryBadge = (category) => {
-    const badges = {
-      flood: { text: "Flood Alert", class: "badge-flood" },
-      earthquake: { text: "Earthquake", class: "badge-earthquake" },
-      general: { text: "Community", class: "badge-general" },
-    };
-    return badges[category];
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    comments: p.comments.map((c) =>
+                      c.id === tempId ? formatted : c
+                    ),
+                  }
+                : p
+            )
+          );
+        } else {
+          // server didn't return comment; remove temp and add a fallback final comment
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    comments: p.comments.map((c) =>
+                      c.id === tempId
+                        ? {
+                            ...c,
+                            pending: false,
+                          }
+                        : c
+                    ),
+                  }
+                : p
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Error posting comment:", err);
+        // revert optimistic comment on error
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? { ...p, comments: p.comments.filter((c) => c.id !== tempId) }
+              : p
+          )
+        );
+      }
+    })();
   };
 
   const mostLikedPosts = [...posts]
     .sort((a, b) => b.likes - a.likes)
     .slice(0, 5);
-
+  useEffect(() => {
+    // Placeholder for future fetch usage. Keep empty now.
+  }, []);
   return (
-    <div className="community-page">
-      {/* Header */}
-      <header className="community-header">
-        <div className="header-content">
-          <button className="back-button" onClick={() => navigate("/")}>
-            ← Back to Home
-          </button>
-          <h1 className="community-title">Community Hub</h1>
-          <p className="community-subtitle">
-            Share experiences, alerts, and support each other during natural
-            disasters
-          </p>
-        </div>
-      </header>
+    <RequireAuth>
+      <div className="community-page">
+        <header className="community-header">
+          <div className="header-content">
+            <button className="back-button" onClick={() => navigate("/")}>
+              ← Back to Home
+            </button>
+            <h1 className="community-title">Community Hub</h1>
+            <p className="community-subtitle">
+              Share experiences, alerts, and support each other
+            </p>
+          </div>
+        </header>
+        <div className="community-container">
+          <main className="posts-section">
+            <AddPostForm onAddPost={handleAddPost} />
 
-      <div className="community-container">
-        <main className="posts-section">
-          {/* Add New Post */}
-          <form className="add-post-form" onSubmit={handleAddPost}>
-            <h2>Add New Post</h2>
-            <input
-              type="text"
-              placeholder="Title"
-              value={newPost.title}
-              onChange={(e) =>
-                setNewPost({ ...newPost, title: e.target.value })
-              }
-            />
-            <textarea
-              placeholder="Description"
-              value={newPost.description}
-              onChange={(e) =>
-                setNewPost({ ...newPost, description: e.target.value })
-              }
-            ></textarea>
-            <input
-              type="text"
-              placeholder="Location"
-              value={newPost.location}
-              onChange={(e) =>
-                setNewPost({ ...newPost, location: e.target.value })
-              }
-            />
-            {imagePreview && (
-              <img src={imagePreview} alt="Preview" className="image-preview" />
+            {loading && (
+              <div className="loader-row">
+                <div className="spinner" aria-hidden="true"></div>
+                <div className="loader-text">Loading posts…</div>
+              </div>
             )}
 
-            <div className="add-post-form-buttons">
-              <label className="upload-label">
-                <ImageIcon size={20} />
-                Upload Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-              </label>
+            {fetchError && (
+              <div className="posts-error">
+                <p>Failed to load posts: {fetchError}</p>
+                <button className="refresh-button" onClick={() => fetchPosts()}>
+                  Refresh
+                </button>
+              </div>
+            )}
 
-              <button type="submit" className="submit-post">
-                <Send size={20} />
-                Post
-              </button>
-            </div>
-          </form>
+            {!loading && !fetchError && posts.length === 0 && (
+              <div className="no-posts">No posts yet.</div>
+            )}
 
-          {/* Posts */}
-          {posts.map((post) => {
-            const badge = getCategoryBadge(post.category);
-            const isLiked = likedPosts.has(post.id);
-            const isSaved = savedPosts.has(post.id);
-            const commentsExpanded = expandedComments.has(post.id);
-
-            return (
-              <article key={post.id} className="post-card">
-                {/* Header */}
-                <div className="post-header">
-                  <div className="post-author-info">
-                    <div className="author-avatar">{post.author.charAt(0)}</div>
-                    <div>
-                      <h3 className="author-name">{post.author}</h3>
-                      <div className="post-meta">
-                        <Clock size={14} />
-                        <span>{post.timestamp}</span>
-                        <MapPin size={14} />
-                        <span>{post.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <span className={`category-badge ${badge.class}`}>
-                    {badge.text}
-                  </span>
-                </div>
-
-                {post.image && (
-                  <div className="post-image-container">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="post-image"
-                    />
-                  </div>
-                )}
-
-                <div className="post-content">
-                  <h2 className="post-title">{post.title}</h2>
-                  <p className="post-description">{post.description}</p>
-                </div>
-
-                <div className="post-actions">
-                  <button
-                    className={`action-button ${isLiked ? "active-like" : ""}`}
-                    onClick={() => handleLike(post.id)}
-                  >
-                    <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
-                    <span>{post.likes}</span>
-                  </button>
-
-                  <button
-                    className={`action-button ${
-                      commentsExpanded ? "active" : ""
-                    }`}
-                    onClick={() => toggleComments(post.id)}
-                  >
-                    <MessageCircle size={20} />
-                    <span>{post.comments.length}</span>
-                  </button>
-
-                  <button
-                    className={`action-button ${isSaved ? "active-save" : ""}`}
-                    onClick={() => handleSave(post.id)}
-                  >
-                    <Bookmark
-                      size={20}
-                      fill={isSaved ? "currentColor" : "none"}
-                    />
-                  </button>
-
-                  <button className="action-button">
-                    <Share2 size={20} />
-                  </button>
-                </div>
-
-                {commentsExpanded && (
-                  <div className="comments-section">
-                    <div className="comments-list">
-                      {post.comments.map((comment) => (
-                        <div key={comment.id} className="comment">
-                          <div className="comment-avatar">
-                            {comment.author.charAt(0)}
-                          </div>
-                          <div className="comment-content">
-                            <div className="comment-header">
-                              <span className="comment-author">
-                                {comment.author}
-                              </span>
-                              <span className="comment-time">
-                                {comment.timestamp}
-                              </span>
-                            </div>
-                            <p className="comment-text">{comment.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="add-comment">
-                      <input
-                        type="text"
-                        placeholder="Add a comment..."
-                        className="comment-input"
-                        value={commentInputs[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentInputs({
-                            ...commentInputs,
-                            [post.id]: e.target.value,
-                          })
-                        }
-                        onKeyPress={(e) =>
-                          e.key === "Enter" && handleAddComment(post.id)
-                        }
-                      />
-                      <button
-                        className="comment-submit"
-                        onClick={() => handleAddComment(post.id)}
-                      >
-                        Post
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </article>
-            );
-          })}
-        </main>
-
-        <aside className="community-sidebar">
-          <div className="sidebar-section">
-            <div className="sidebar-header">
-              <TrendingUp size={20} />
-              <h2>Most Liked Posts</h2>
-            </div>
-            <div className="trending-posts">
-              {mostLikedPosts.map((post, index) => (
-                <div key={post.id} className="trending-post">
-                  <span className="trending-rank">#{index + 1}</span>
-                  <div className="trending-content">
-                    <h4 className="trending-title">{post.title}</h4>
-                    <div className="trending-meta">
-                      <span className="trending-likes">
-                        <Heart size={14} />
-                        {post.likes}
-                      </span>
-                      <span className="trending-comments">
-                        <MessageCircle size={14} />
-                        {post.comments.length}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="sidebar-section">
-            <h3 className="sidebar-section-title">Quick Actions</h3>
-            <button
-              className="sidebar-button"
-              onClick={() => navigate("/analyze")}
-            >
-              Analyze Your Region
-            </button>
-            <button className="sidebar-button secondary">
-              View Saved Posts
-            </button>
-          </div>
-        </aside>
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                isLiked={likedPosts.has(post.id)}
+                isSaved={savedPosts.has(post.id)}
+                commentsExpanded={expandedComments.has(post.id)}
+                isOwner={isOwnerOf(post)}
+                onDelete={() => openConfirmDelete(post.id)}
+                onLike={() => handleLike(post.id)}
+                onSave={() => handleSave(post.id)}
+                onToggleComments={() => toggleComments(post.id)}
+                onAddComment={(text) => handleAddComment(post.id, text)}
+              />
+            ))}
+          </main>
+          <aside className="community-sidebar">
+            <Sidebar
+              mostLikedPosts={mostLikedPosts}
+              onAnalyze={() => navigate("/analyze")}
+            />
+          </aside>
+        </div>
+        <ConfirmModal
+          open={confirmOpen}
+          title="Delete post"
+          description="Are you sure you want to delete this post? This cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmOpen(false)}
+        />
       </div>
-    </div>
+    </RequireAuth>
   );
 }
