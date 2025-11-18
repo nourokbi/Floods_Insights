@@ -4,7 +4,7 @@ import axios from "axios";
 import { API_BASE } from "../config/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import PostCard from "../components/Community/PostCard";
+import PostCard from "../components/community/PostCard";
 import ConfirmModal from "../components/UI/ConfirmModal";
 import { useToast } from "../components/UI/ToastProvider";
 import RequireAuth from "../components/Auth/RequireAuth";
