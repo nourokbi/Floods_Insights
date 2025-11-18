@@ -1,0 +1,120 @@
+.simple-team-section {
+  padding: 2rem;
+  flex-grow: 1;
+  display: flex;
+  align-items: center; /* توسيط رأسي للمحتوى */
+  justify-content: center; /* توسيط أفقي */
+  /* 🚨 تم حذف: overflow-y: auto; 🚨 */
+}
+
+.simple-team-container {
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* نمط Grid لعرض الأعضاء (3 أعمدة ثم 2) */
+.team-grid-simple {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+/* توسيط الأعضاء الرابع والخامس في عرض 3 أعمدة */
+.team-grid-simple > *:nth-child(4) {
+  grid-column: 2 / 3;
+}
+.team-grid-simple > *:nth-child(5) {
+  grid-column: 3 / 4;
+}
+
+/* === أنماط البطاقة الفردية === */
+.team-member-card-simple {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+[data-theme="dark"] .team-member-card-simple {
+  background: #1e293b;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.team-member-card-simple:hover {
+  transform: translateY(-5px);
+}
+
+/* === أنماط الصور والأيقونات === */
+.member-image-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 1rem auto;
+  border: 3px solid #3b82f6;
+}
+
+.member-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback styles: الأحرف الأولى */
+.member-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #93c5fd, #3b82f6);
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.member-icon-bg {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0.08;
+  width: 80px;
+  height: 80px;
+  color: var(--primary-color);
+  z-index: 0;
+}
+
+/* === أنماط النصوص === */
+.member-name-simple {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ... (باقي أنماط النصوص كما هي) ... */
+
+/* === Responsive adjustments === */
+@media (max-width: 1024px) {
+  .team-grid-simple {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .team-grid-simple > *:nth-child(4),
+  .team-grid-simple > *:nth-child(5) {
+    grid-column: span 1;
+    grid-column-start: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .team-grid-simple {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
