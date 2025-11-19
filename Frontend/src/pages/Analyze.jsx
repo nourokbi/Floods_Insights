@@ -122,7 +122,13 @@ function Analyze() {
       <div className="dashboard-container">
         {/* Left Sidebar - Flood Prediction & Analysis */}
         <div className="left-sidebar-section">
-          <InfoSidebar selectedPoint={selectedPoint} />
+          <InfoSidebar
+            selectedPoint={selectedPoint}
+            locationName={locationName}
+            mapView={mapView}
+            weatherData={weatherData}
+            nearestQuake={nearestQuake}
+          />
         </div>
 
         {/* Main Map Area */}

@@ -15,11 +15,11 @@ const teamMembers = [
   },
   {
     name: "Marwan El-mehy",
-    role: "AI/ML Engineer",
-    bio: "Developing deep learning models (TensorFlow/OpenCV) for predictive risk assessment and automated recognition systems.",
+    role: "Backend Engineer",
+    bio: "Designing and building scalable backend services and APIs to support real-time risk assessment and automated recognition systems.",
     imagePath: marwanPhoto,
     details:
-      "Specializes in integrating AI outputs with emergency decision-making tools.",
+      "Specializes in integrating data pipelines and service-level outputs with emergency response and decision-making platforms.",
   },
   {
     name: "Mohamed Sultan",

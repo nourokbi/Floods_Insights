@@ -353,3 +353,23 @@
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
+
+/* Download report button */
+.download-report-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.download-report-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.18);
+}

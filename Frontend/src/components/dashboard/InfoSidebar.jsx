@@ -1,8 +1,15 @@
 import { BarChart3, AlertTriangle, Calendar, Clock } from "lucide-react";
 import "./InfoSidebar.css";
 import { useEffect, useState } from "react";
+import generatePdfReport from "../../utils/generateReport";
 
-function InfoSidebar({ selectedPoint }) {
+function InfoSidebar({
+  selectedPoint,
+  locationName,
+  mapView,
+  weatherData,
+  nearestQuake,
+}) {
   const [histStats, setHistStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState(null);
@@ -11,55 +18,7 @@ function InfoSidebar({ selectedPoint }) {
   const [prediction, setPrediction] = useState(null);
   const [openMeteoStatus, setOpenMeteoStatus] = useState("checking");
   const [weatheringStatus, setWeatheringStatus] = useState("checking");
-
-  // Fetch general historical statistics from ArcGIS layer
-  useEffect(() => {
-    const fetchStats = async () => {
-      setStatsLoading(true);
-      setStatsError(null);
-      try {
-        const base =
-          "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS22/FeatureServer/0/query";
-        const outStatistics = [
-          {
-            statisticType: "count",
-            onStatisticField: "OBJECTID",
-            outStatisticFieldName: "record_count",
-          },
-          {
-            statisticType: "avg",
-            onStatisticField: "flood_intensity",
-            outStatisticFieldName: "avg_intensity",
-          },
-          {
-            statisticType: "avg",
-            onStatisticField: "flood_duration",
-            outStatisticFieldName: "avg_duration",
-          },
-          {
-            statisticType: "max",
-            onStatisticField: "date",
-            outStatisticFieldName: "latest_date",
-          },
-        ];
-        const params = new URLSearchParams({
-          f: "json",
-          where: "1=1",
-          returnGeometry: "false",
-          outStatistics: JSON.stringify(outStatistics),
-        });
-        const resp = await fetch(`${base}?${params.toString()}`);
-        const json = await resp.json();
-        const attrs = json?.features?.[0]?.attributes || null;
-        setHistStats(attrs);
-      } catch {
-        setStatsError("Failed to load historical stats");
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
+  const [exporting, setExporting] = useState(false);
 
   // Fetch flood prediction when a point is selected
   useEffect(() => {
@@ -179,6 +138,55 @@ function InfoSidebar({ selectedPoint }) {
     };
   }, []);
 
+  // Fetch general historical statistics from ArcGIS layer
+  useEffect(() => {
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      setStatsError(null);
+      try {
+        const base =
+          "https://services3.arcgis.com/UDCw00RKDRKPqASe/arcgis/rest/services/FLOODS_PONTS22/FeatureServer/0/query";
+        const outStatistics = [
+          {
+            statisticType: "count",
+            onStatisticField: "OBJECTID",
+            outStatisticFieldName: "record_count",
+          },
+          {
+            statisticType: "avg",
+            onStatisticField: "flood_intensity",
+            outStatisticFieldName: "avg_intensity",
+          },
+          {
+            statisticType: "avg",
+            onStatisticField: "flood_duration",
+            outStatisticFieldName: "avg_duration",
+          },
+          {
+            statisticType: "max",
+            onStatisticField: "date",
+            outStatisticFieldName: "latest_date",
+          },
+        ];
+        const params = new URLSearchParams({
+          f: "json",
+          where: "1=1",
+          returnGeometry: "false",
+          outStatistics: JSON.stringify(outStatistics),
+        });
+        const resp = await fetch(`${base}?${params.toString()}`);
+        const json = await resp.json();
+        const attrs = json?.features?.[0]?.attributes || null;
+        setHistStats(attrs);
+      } catch {
+        setStatsError("Failed to load historical stats");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div className="info-sidebar">
       <div className="info-sidebar-header">
@@ -232,6 +240,39 @@ function InfoSidebar({ selectedPoint }) {
         ) : (
           <div className="alerts-list">
             <div className="alert-item">No prediction available.</div>
+          </div>
+        )}
+        {/* Download PDF button - visible only when a point is selected */}
+        {selectedPoint && (
+          <div style={{ marginTop: 12 }}>
+            <button
+              className="download-report-btn"
+              disabled={exporting || predLoading || !prediction}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  await generatePdfReport({
+                    selectedPoint,
+                    locationName,
+                    mapView,
+                    prediction,
+                    weatherData,
+                    nearestQuake,
+                  });
+                } catch (err) {
+                  console.error("Failed to generate PDF", err);
+                  alert("Failed to generate PDF: " + (err?.message || err));
+                } finally {
+                  setExporting(false);
+                }
+              }}
+            >
+              {exporting
+                ? "Generating…"
+                : predLoading || !prediction
+                ? "Waiting analysis…"
+                : "Download Report (PDF)"}
+            </button>
           </div>
         )}
       </div>

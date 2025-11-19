@@ -10,6 +10,7 @@ import ConfirmModal from "../components/UI/ConfirmModal";
 import { useToast } from "../components/UI/ToastProvider";
 import "./Community.css";
 import RequireAuth from "../components/Auth/RequireAuth";
+import INITIAL_POSTS from "../data/initialPosts";
 
 export default function Community() {
   const navigate = useNavigate();
@@ -513,6 +514,31 @@ export default function Community() {
         <div className="community-container">
           <main className="posts-section">
             <AddPostForm onAddPost={handleAddPost} />
+
+            {/* Render pinned posts first */}
+            {INITIAL_POSTS.length > 0 && (
+              <section className="pinned-section">
+                <h2 className="pinned-title">Pinned</h2>
+                <div className="pinned-list">
+                  {INITIAL_POSTS.map((post) => (
+                    <PostCard
+                      key={`pinned-${post.id}`}
+                      post={post}
+                      pinned={true}
+                      isLiked={likedPosts.has(String(post.id))}
+                      isSaved={savedPosts.has(String(post.id))}
+                      commentsExpanded={expandedComments.has(String(post.id))}
+                      isOwner={isOwnerOf(post)}
+                      onDelete={() => openConfirmDelete(post.id)}
+                      onLike={() => handleLike(post.id)}
+                      onSave={() => handleSave(post.id)}
+                      onToggleComments={() => toggleComments(post.id)}
+                      onAddComment={(text) => handleAddComment(post.id, text)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
             {loading && (
               <div className="loader-row">

@@ -19,7 +19,7 @@ function Login() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
+      setError("Login failed. Please check your credentials." + err.message);
     }
   };
 

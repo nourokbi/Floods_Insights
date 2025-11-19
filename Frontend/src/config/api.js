@@ -13,7 +13,7 @@ const API_BASE =
     globalThis.process &&
     globalThis.process.env &&
     globalThis.process.env.REACT_APP_API_BASE) ||
-  API_HOSTS.onrender;
+  API_HOSTS.local;
 
 export { API_HOSTS, API_BASE };
 

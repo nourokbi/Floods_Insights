@@ -7,6 +7,7 @@ import {
   Clock,
   MapPin,
   Trash2,
+  Pin,
 } from "lucide-react";
 import CommentsSection from "./CommentsSection";
 const getCategoryBadge = (category) => {
@@ -28,6 +29,7 @@ export default function PostCard({
   onAddComment,
   isOwner,
   onDelete,
+  pinned,
 }) {
   const badge = getCategoryBadge(post.category);
   return (
@@ -45,7 +47,14 @@ export default function PostCard({
             </div>
           </div>
         </div>
-        <span className={`category-badge ${badge.class}`}>{badge.text}</span>
+        <div className="post-badges">
+          <span className={`category-badge ${badge.class}`}>{badge.text}</span>
+          {pinned && (
+            <span className="pinned-badge">
+              <Pin size={14} /> Pinned
+            </span>
+          )}
+        </div>
       </div>
       {post.image && (
         <div className="post-image-container">
