@@ -7,6 +7,127 @@ function safeText(doc, text, x, y, maxWidth) {
   return lines.length * 12;
 }
 
+function writeTwo(
+  doc,
+  left,
+  right,
+  xLeft,
+  xRight,
+  y,
+  maxWidthLeft = 240,
+  maxWidthRight = 240
+) {
+  const splitLabel = (s) => {
+    const str = String(s || "");
+    const idx = str.indexOf(":");
+    if (idx === -1) return { label: "", value: str };
+    return { label: str.slice(0, idx + 1), value: str.slice(idx + 1).trim() };
+  };
+
+  const L = splitLabel(left);
+  const R = splitLabel(right);
+  const leftLines = doc.splitTextToSize(L.value || "", maxWidthLeft);
+  const rightLines = doc.splitTextToSize(R.value || "", maxWidthRight);
+  const lines = Math.max(leftLines.length, rightLines.length) || 1;
+
+  const draw = (X, itemLines, label) => {
+    if (label) {
+      doc.setFont("helvetica", "bold");
+      doc.text(label, X, y);
+      const lw = doc.getTextWidth(label) + 4;
+      doc.setFont("helvetica", "normal");
+      doc.text(itemLines, X + lw, y);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(itemLines, X, y);
+    }
+  };
+
+  draw(xLeft, leftLines, L.label);
+  draw(xRight, rightLines, R.label);
+  doc.setFont("helvetica", "normal");
+  return lines * 12;
+}
+
+function writeThree(
+  doc,
+  a,
+  b,
+  c,
+  xA,
+  xB,
+  xC,
+  y,
+  maxA = 160,
+  maxB = 160,
+  maxC = 160
+) {
+  // For each column, split into label:value if possible and render label bold, value normal
+  const splitLabel = (str) => {
+    const s = String(str || "");
+    const idx = s.indexOf(":");
+    if (idx === -1) return { label: "", value: s };
+    return { label: s.slice(0, idx + 1), value: s.slice(idx + 1).trim() };
+  };
+
+  const A = splitLabel(a);
+  const B = splitLabel(b);
+  const C = splitLabel(c);
+
+  const aLines = doc.splitTextToSize(A.value || "", maxA);
+  const bLines = doc.splitTextToSize(B.value || "", maxB);
+  const cLines = doc.splitTextToSize(C.value || "", maxC);
+  const lines = Math.max(aLines.length, bLines.length, cLines.length) || 1;
+
+  const drawCol = (X, itemLines, label) => {
+    if (label) {
+      doc.setFont("helvetica", "bold");
+      doc.text(label, X, y);
+      const labelW = doc.getTextWidth(label) + 4;
+      doc.setFont("helvetica", "normal");
+      doc.text(itemLines, X + labelW, y);
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(itemLines, X, y);
+    }
+  };
+
+  drawCol(xA, aLines, A.label);
+  drawCol(xB, bLines, B.label);
+  drawCol(xC, cLines, C.label);
+  doc.setFont("helvetica", "normal");
+  return lines * 12;
+}
+
+function writeInlineBold(doc, textLine, x, y, maxWidth = 520) {
+  // segments separated by '  |  '
+  const segments = String(textLine || "").split("  |  ");
+  let cx = x;
+  segments.forEach((seg, idx) => {
+    const s = seg.trim();
+    const colon = s.indexOf(":");
+    if (colon !== -1) {
+      const label = s.slice(0, colon + 1);
+      const value = s.slice(colon + 1).trim();
+      doc.setFont("helvetica", "bold");
+      doc.text(label, cx, y);
+      const lw = doc.getTextWidth(label) + 4;
+      doc.setFont("helvetica", "normal");
+      doc.text(value, cx + lw, y);
+      cx += lw + doc.getTextWidth(value) + 12;
+    } else {
+      doc.setFont("helvetica", "normal");
+      doc.text(s, cx, y, { maxWidth: maxWidth - (cx - x) });
+      cx += doc.getTextWidth(s) + 12;
+    }
+    // draw separator
+    if (idx < segments.length - 1) {
+      doc.setFont("helvetica", "normal");
+      doc.text("|", cx - 6, y);
+    }
+  });
+  doc.setFont("helvetica", "normal");
+}
 async function captureElementImage(selector, scale = 1.25) {
   const el = document.querySelector(selector);
   if (!el) return null;
@@ -31,6 +152,7 @@ async function generatePdfReport({
   const margin = 40;
   const pageH = doc.internal.pageSize.height;
   let y = 40;
+  let h = 0;
 
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
@@ -60,8 +182,9 @@ async function generatePdfReport({
       const ss = await mapView.takeScreenshot({ width: 1200, height: 700 });
       const dataUrl = ss?.dataUrl || ss?.data || ss || null;
       if (dataUrl) {
-        doc.addImage(dataUrl, "JPEG", margin, y, 500, 260);
-        y += 270;
+        // use a smaller map snapshot to save vertical space
+        doc.addImage(dataUrl, "JPEG", margin, y, 420, 220);
+        y += 230;
         added = true;
       }
     }
@@ -72,8 +195,8 @@ async function generatePdfReport({
   if (!added) {
     const img = await captureElementImage(".map-section", 1.25);
     if (img) {
-      doc.addImage(img, "JPEG", margin, y, 500, 260);
-      y += 270;
+      doc.addImage(img, "JPEG", margin, y, 420, 220);
+      y += 230;
     }
   }
 
@@ -101,23 +224,20 @@ async function generatePdfReport({
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
 
-    safeText(
-      doc,
-      `Risk level: ${prediction.risk_level ?? "N/A"}`,
-      margin,
-      y,
-      500
-    );
-    y += 14;
-    if (prediction.risk_score != null) {
-      safeText(doc, `Risk score: ${prediction.risk_score}`, margin, y, 500);
-      y += 14;
+    // compact prediction into a single-line summary (risk level | score | short message)
+    if (y + 28 > pageH) {
+      doc.addPage();
+      y = 40;
     }
-    if (prediction.message) {
-      const lines = doc.splitTextToSize(prediction.message, 500);
-      doc.text(lines, margin, y);
-      y += lines.length * 12 + 8;
-    }
+    doc.setFontSize(10);
+    const parts = [];
+    parts.push(`Risk: ${prediction.risk_level ?? "N/A"}`);
+    if (prediction.risk_score != null)
+      parts.push(`Score: ${prediction.risk_score}`);
+    if (prediction.message) parts.push(String(prediction.message));
+    const predLine = parts.join("  |  ");
+    writeInlineBold(doc, predLine, margin, y, 520);
+    y += 16;
 
     // If the prediction contains additional metadata, include it
     const meta = { ...prediction };
@@ -149,28 +269,31 @@ async function generatePdfReport({
     doc.setFont("helvetica", "normal");
 
     const cw = weatherData.current_weather || {};
-    safeText(
-      doc,
-      `Current temperature: ${cw.temperature ?? "N/A"} °C`,
-      margin,
-      y,
-      500
-    );
-    y += 14;
-    safeText(
-      doc,
-      `Wind speed: ${cw.windspeed ?? cw.wind_speed ?? "N/A"} m/s`,
-      margin,
-      y,
-      500
-    );
-    y += 14;
-    if (cw.winddirection != null) {
-      safeText(doc, `Wind direction: ${cw.winddirection}°`, margin, y, 500);
-      y += 14;
+    // compress weather into two lines: (Temp | Wind) and (Wind dir / Ref time | Precip & Rain)
+    if (y + 30 > pageH) {
+      doc.addPage();
+      y = 40;
     }
-    safeText(doc, `Reference time: ${cw.time ?? "-"}`, margin, y, 500);
-    y += 16;
+    doc.setFontSize(10);
+    // Line 1: Temp | Wind | Wind dir
+    const tempText = `Temp: ${cw.temperature ?? "N/A"} °C`;
+    const windText = `Wind: ${cw.windspeed ?? cw.wind_speed ?? "N/A"} m/s`;
+    const windDirText =
+      cw.winddirection != null ? `Dir: ${cw.winddirection}°` : `Dir: -`;
+    h = writeThree(
+      doc,
+      tempText,
+      windText,
+      windDirText,
+      margin,
+      margin + 170,
+      margin + 340,
+      y,
+      160,
+      160,
+      160
+    );
+    y += h + 6;
 
     // Align precipitation/rain with current time using hourly arrays
     const hourly = weatherData.hourly || {};
@@ -201,22 +324,24 @@ async function generatePdfReport({
       }
     }
 
-    safeText(
+    // Line 2: Ref time | Precip | Rain
+    const refTimeText = `Ref: ${cw.time ?? "-"}`;
+    const precipText = `Precip: ${precip != null ? `${precip} mm` : "N/A"}`;
+    const rainText = `Rain: ${rain != null ? `${rain} mm` : "N/A"}`;
+    h = writeThree(
       doc,
-      `Precipitation: ${precip != null ? `${precip} mm` : "N/A"}`,
+      refTimeText,
+      precipText,
+      rainText,
       margin,
+      margin + 170,
+      margin + 340,
       y,
-      500
+      160,
+      160,
+      160
     );
-    y += 14;
-    safeText(
-      doc,
-      `Rain: ${rain != null ? `${rain} mm` : "N/A"}`,
-      margin,
-      y,
-      500
-    );
-    y += 14;
+    y += h + 6;
 
     // Optionally include a small hourly table around current index for context
     if (hourly.time && Array.isArray(hourly.time)) {
@@ -233,14 +358,20 @@ async function generatePdfReport({
           const t = hourly.time[i];
           const p = hourly.precipitation ? hourly.precipitation[i] ?? "-" : "-";
           const r = hourly.rain ? hourly.rain[i] ?? "-" : "-";
-          safeText(
+          // show time and precip on left, rain on right to save space
+          const left = `${t} — precip: ${p} mm`;
+          const right = `rain: ${r} mm`;
+          const hh = writeTwo(
             doc,
-            `${t} — precip: ${p} mm, rain: ${r} mm`,
+            left,
+            right,
             margin + 8,
+            margin + 260,
             y,
-            480
+            220,
+            200
           );
-          y += 12;
+          y += hh;
         }
         y += 8;
       }
@@ -261,18 +392,30 @@ async function generatePdfReport({
     doc.setFont("helvetica", "normal");
 
     const nq = nearestQuake;
-    safeText(doc, `Magnitude: ${nq.magnitude ?? "N/A"}`, margin, y, 500);
-    y += 14;
-    safeText(doc, `Distance: ${nq.distance ?? "N/A"} km`, margin, y, 500);
-    y += 14;
-    if (nq.depth != null) {
-      safeText(doc, `Depth: ${nq.depth} km`, margin, y, 500);
-      y += 14;
+    // Write magnitude and distance on same line
+    if (y + 20 > pageH) {
+      doc.addPage();
+      y = 40;
     }
-    if (nq.time) {
-      const t = nq.time instanceof Date ? nq.time : new Date(nq.time);
-      safeText(doc, `Time: ${t.toLocaleString()}`, margin, y, 500);
-      y += 14;
+    h = writeTwo(
+      doc,
+      `Magnitude: ${nq.magnitude ?? "N/A"}`,
+      `Distance: ${nq.distance ?? "N/A"} km`,
+      margin,
+      margin + 260,
+      y
+    );
+    y += h + 6;
+    if (nq.depth != null || nq.time) {
+      const left = nq.depth != null ? `Depth: ${nq.depth} km` : "";
+      const right = nq.time
+        ? `Time: ${(nq.time instanceof Date
+            ? nq.time
+            : new Date(nq.time)
+          ).toLocaleString()}`
+        : "";
+      h = writeTwo(doc, left, right, margin, margin + 260, y);
+      y += h + 6;
     }
     if (nq.place) {
       const placeLines = doc.splitTextToSize(nq.place, 500);
