@@ -11,13 +11,35 @@ import coastalFlood from "../assets/history/coastal-flooding.jpg";
 import slide3Bg from "../assets/history/slide3-bg.jpg";
 import slide4Bg from "../assets/history/slide4-bg.png";
 import chartImg from "../assets/history/chart.png";
-// import NavigationArrows from "../components/history/NavigationArrows";
+import hapiImg from "../assets/history/hapi.jpg";
+import hapiSlideBg from "../assets/history/hapi-slide-bg.jpg";
+import ourSolutionBg from "../assets/history/our-solution-slide-bg.jpg";
+import arcgisPro from "../assets/history/arcgis-pro.png";
+import reactIcon from "../assets/react.svg";
+import scikitIcon from "../assets/history/scikit-learn.svg";
+import jsPdfIcon from "../assets/history/jsPDF.svg";
+// Icon set (lucide-react)
+import { CloudRain, BarChart2, Bell, Users, FileText } from "lucide-react";
+
+// Reusable Slide wrapper to remove repeated markup
+function Slide({ index, currentSlide, className = "", bgImage, children }) {
+  const active = currentSlide === index ? "active" : "";
+  const style = bgImage ? { backgroundImage: `url(${bgImage})` } : undefined;
+
+  return (
+    <div className={`slide ${className} ${active}`} style={style}>
+      <div className="slide-content">
+        <div className="content-inner">{children}</div>
+      </div>
+    </div>
+  );
+}
 
 export default function History() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const glowRef = useRef(null);
-  const totalSlides = 9; // Total number of slides
+  const totalSlides = 10; // increased to include final Thank You slide
 
   const goToSlide = useCallback(
     (slideIndex) => {
@@ -72,6 +94,8 @@ export default function History() {
   // Use custom hook for keyboard, wheel, and touch navigation
   useSlideNavigation(currentSlide, totalSlides, isAnimating, goToSlide);
 
+  // PDF download removed per request — reports are presented as a solution in the slide
+
   return (
     <div className="history-page">
       {/* Mouse Glow Effect */}
@@ -79,315 +103,396 @@ export default function History() {
 
       <div className="slides-container">
         {/* Slide 1 - Introduction (two-column: text left, image right) */}
-        <div
-          className={`slide slide-1 ${currentSlide === 0 ? "active" : ""}`}
-          style={{ backgroundImage: `url(${slide1Bg})` }}
+        <Slide
+          index={0}
+          currentSlide={currentSlide}
+          className="slide-1"
+          bgImage={slide1Bg}
         >
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">What Is a Flood?</h1>
-              <div className="slide-1-layout">
-                <div className="slide-1-text">
-                  <p className="intro-text-large">
-                    Floods occur when water covers land that’s normally dry,
-                    often caused by heavy rain, rapid snowmelt, storm surges, or
-                    infrastructure failures. They can develop slowly or strike
-                    suddenly as flash floods.
-                  </p>
+          <h1 className="slide-title">What Is a Flood?</h1>
+          <div className="slide-1-layout">
+            <div className="slide-1-text">
+              <p className="intro-text-large">
+                Floods occur when water covers land that’s normally dry, often
+                caused by heavy rain, rapid snowmelt, storm surges, or
+                infrastructure failures. They can develop slowly or strike
+                suddenly as flash floods.
+              </p>
 
-                  <p className="intro-text-large">
-                    They may strike suddenly or build up over time, lasting from
-                    hours to weeks and damaging homes and infrastructure.
-                  </p>
+              <p className="intro-text-large">
+                They may strike suddenly or build up over time, lasting from
+                hours to weeks and damaging homes and infrastructure.
+              </p>
 
-                  <p className="intro-text-large">
-                    Flooding happens when water overflows rivers or coasts, or
-                    when rain falls faster than the ground can absorb it.
-                  </p>
-                </div>
-                <div className="slide-1-image-wrapper">
-                  <img
-                    src={slide1Img}
-                    alt="Flood scene"
-                    className="slide-1-image"
-                  />
-                </div>
-              </div>
+              <p className="intro-text-large">
+                Flooding happens when water overflows rivers or coasts, or when
+                rain falls faster than the ground can absorb it.
+              </p>
+            </div>
+            <div className="slide-1-image-wrapper">
+              <img
+                src={slide1Img}
+                alt="Flood scene"
+                className="slide-1-image"
+              />
             </div>
           </div>
-        </div>
+        </Slide>
 
         {/* Slide 2 - Types of Floods */}
-        <div
-          className={`slide slide-2 ${currentSlide === 1 ? "active" : ""}`}
-          style={{ backgroundImage: `url(${damFailure})` }}
+        <Slide
+          index={1}
+          currentSlide={currentSlide}
+          className="slide-2"
+          bgImage={damFailure}
         >
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Types of Floods</h1>
-              <p className="slide-subtitle">
-                Common flood types and typical causes
-              </p>
-              <div className="slide-description">
-                <ul className="slide-list">
-                  <li>
-                    <strong>River (Fluvial) Floods:</strong> Occur when rivers
-                    overflow due to heavy rainfall or snowmelt, inundating
-                    adjacent floodplains.
-                  </li>
-                  <li>
-                    <strong>Coastal Floods:</strong> Caused by storm surge, high
-                    tides, and rising sea levels, affecting coastal communities.
-                  </li>
-                  <li>
-                    <strong>Flash Floods:</strong> Rapid flooding following
-                    intense short-duration rainfall or dam failures, with little
-                    warning time.
-                  </li>
-                  <li>
-                    <strong>Urban (Pluvial) Floods:</strong> Result from
-                    overwhelmed drainage in built environments, where
-                    impermeable surfaces prevent absorption.
-                  </li>
-                </ul>
-              </div>
-            </div>
+          <h1 className="slide-title">Types of Floods</h1>
+          <p className="slide-subtitle">
+            Common flood types and typical causes
+          </p>
+          <div className="slide-description">
+            <ul className="slide-list">
+              <li>
+                <strong>River (Fluvial) Floods:</strong> Occur when rivers
+                overflow due to heavy rainfall or snowmelt, inundating adjacent
+                floodplains.
+              </li>
+              <li>
+                <strong>Coastal Floods:</strong> Caused by storm surge, high
+                tides, and rising sea levels, affecting coastal communities.
+              </li>
+              <li>
+                <strong>Flash Floods:</strong> Rapid flooding following intense
+                short-duration rainfall or dam failures, with little warning
+                time.
+              </li>
+              <li>
+                <strong>Urban (Pluvial) Floods:</strong> Result from overwhelmed
+                drainage in built environments, where impermeable surfaces
+                prevent absorption.
+              </li>
+            </ul>
           </div>
-        </div>
+        </Slide>
 
         {/* Slide 3 - Flood Examples (gallery) */}
-        <div
-          className={`slide gallery ${currentSlide === 2 ? "active" : ""}`}
-          style={{ backgroundImage: `url(${slide3Bg})` }}
+        <Slide
+          index={2}
+          currentSlide={currentSlide}
+          className="gallery"
+          bgImage={slide3Bg}
         >
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Flood Examples</h1>
-              <div className="slide-3-grid">
-                <div className="img-card">
-                  <img src={flashFlood} alt="Flash flood" />
-                  <p className="img-caption">Flash Flood</p>
-                </div>
-                <div className="img-card">
-                  <img src={riverFlood} alt="River flood" />
-                  <p className="img-caption">River Flood</p>
-                </div>
-                <div className="img-card">
-                  <img src={damFailure} alt="Dam failure" />
-                  <p className="img-caption">Dam Failure</p>
-                </div>
-                <div className="img-card">
-                  <img src={coastalFlood} alt="Coastal flooding" />
-                  <p className="img-caption">Coastal Flooding</p>
-                </div>
-              </div>
+          <h1 className="slide-title">Flood Examples</h1>
+          <div className="gallery-grid">
+            <div className="img-card">
+              <img src={flashFlood} alt="Flash flood" />
+              <p className="img-caption">Flash Flood</p>
+            </div>
+            <div className="img-card">
+              <img src={riverFlood} alt="River flood" />
+              <p className="img-caption">River Flood</p>
+            </div>
+            <div className="img-card">
+              <img src={damFailure} alt="Dam failure" />
+              <p className="img-caption">Dam Failure</p>
+            </div>
+            <div className="img-card">
+              <img src={coastalFlood} alt="Coastal flooding" />
+              <p className="img-caption">Coastal Flooding</p>
             </div>
           </div>
-        </div>
+        </Slide>
 
         {/* Slide 4 - Climate Change */}
-        <div
-          className={`slide slide-3 ${currentSlide === 3 ? "active" : ""}`}
-          style={{ backgroundImage: `url(${slide4Bg})` }}
+        <Slide
+          index={3}
+          currentSlide={currentSlide}
+          className="slide-3"
+          bgImage={slide4Bg}
         >
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Climate Change Impact</h1>
-              <div className="slide-description">
-                <p className="slide-intro-text">
-                  Climate change strongly affects how often and how severely
-                  floods occur. Warmer global temperatures allow the atmosphere
-                  to hold more moisture, resulting in heavier and more intense
-                  rainfall that can overwhelm rivers, drainage systems, and
-                  flood defenses.
-                </p>
-                <p>
-                  Rising sea levels and changing precipitation patterns increase
-                  both coastal and inland flood risks worldwide.
-                </p>
-              </div>
-              <div className="slide-chart">
-                <img src={chartImg} alt="Climate change chart" />
-              </div>
-            </div>
+          <h1 className="slide-title">Climate Change Impact</h1>
+          <div className="slide-description">
+            <p className="slide-intro-text">
+              Climate change strongly affects how often and how severely floods
+              occur. Warmer global temperatures allow the atmosphere to hold
+              more moisture, resulting in heavier and more intense rainfall that
+              can overwhelm rivers, drainage systems, and flood defenses.
+            </p>
+            <p>
+              Rising sea levels and changing precipitation patterns increase
+              both coastal and inland flood risks worldwide.
+            </p>
           </div>
-        </div>
+          <div className="slide-chart">
+            <img src={chartImg} alt="Climate change chart" />
+          </div>
+        </Slide>
 
-        {/* Slide 4 - Historical Impact */}
-        <div className={`slide slide-4 ${currentSlide === 4 ? "active" : ""}`}>
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Historical Impact</h1>
-              <p className="slide-subtitle">
-                Devastating Flood Events Through Time
+        {/* Slide 5 - Historical Impact */}
+        <Slide index={4} currentSlide={currentSlide} className="slide-4">
+          <h1 className="slide-title">Historical Impact</h1>
+          <p className="slide-subtitle">
+            Devastating Flood Events Through Time
+          </p>
+          <div className="slide-description">
+            <ul className="slide-list">
+              <li>
+                1931 China Floods - Over 1 million casualties, worst natural
+                disaster
+              </li>
+              <li>
+                1953 North Sea Flood - 2,551 deaths across Netherlands and UK
+              </li>
+              <li>
+                2010 Pakistan Floods - 20 million people affected, $10B damage
+              </li>
+              <li>
+                2011 Thailand Floods - 815 deaths, economic impact of $45
+                billion
+              </li>
+              <li>
+                2013 European Floods - €12 billion in damages across Central
+                Europe
+              </li>
+            </ul>
+          </div>
+        </Slide>
+
+        {/* Slide 6 - Hapi (move here instead of Modern Solutions) */}
+        <Slide
+          index={5}
+          currentSlide={currentSlide}
+          className="slide-5"
+          bgImage={hapiSlideBg}
+        >
+          <h1 className="slide-title">Hapi — God of the Nile's Flood</h1>
+          <div
+            className="slide-5-layout"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 48%",
+              gap: "2rem",
+              alignItems: "center",
+            }}
+          >
+            <div className="slide-5-text">
+              <p>
+                Hapi is the god of the Nile's annual flood — a deity of water
+                and fertility.
               </p>
-              <div className="slide-description">
-                <ul className="slide-list">
-                  <li>
-                    1931 China Floods - Over 1 million casualties, worst natural
-                    disaster
-                  </li>
-                  <li>
-                    1953 North Sea Flood - 2,551 deaths across Netherlands and
-                    UK
-                  </li>
-                  <li>
-                    2010 Pakistan Floods - 20 million people affected, $10B
-                    damage
-                  </li>
-                  <li>
-                    2011 Thailand Floods - 815 deaths, economic impact of $45
-                    billion
-                  </li>
-                  <li>
-                    2013 European Floods - €12 billion in damages across Central
-                    Europe
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Slide 5 - Modern Solutions */}
-        <div className={`slide slide-5 ${currentSlide === 5 ? "active" : ""}`}>
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Modern Solutions</h1>
-              <p className="slide-subtitle">
-                Technology and Prevention Strategies
+              <p>
+                Egyptians celebrated Hapi because the inundation left rich silt
+                that made fields fertile and supported crops.
               </p>
-              <div className="slide-description">
-                <ul className="slide-list">
-                  <li>
-                    <strong>Real-time Monitoring:</strong> Satellite imagery and
-                    IoT sensors provide continuous data on water levels and
-                    weather patterns
-                  </li>
-                  <li>
-                    <strong>AI Prediction Models:</strong> Machine learning
-                    algorithms analyze historical data to forecast flood events
-                    with high accuracy
-                  </li>
-                  <li>
-                    <strong>Early Warning Systems:</strong> Automated alerts
-                    notify communities hours or days before flooding occurs
-                  </li>
-                  <li>
-                    <strong>Smart Infrastructure:</strong> Adaptive drainage
-                    systems and flood barriers that respond to real-time
-                    conditions
-                  </li>
-                </ul>
-              </div>
+              <p>
+                Priests performed rituals to honor Hapi and help ensure a
+                timely, balanced flood each year.
+              </p>
+            </div>
+            <div className="slide-5-image-wrapper">
+              <img
+                src={hapiImg}
+                alt="Hapi, Nile flood god"
+                className="slide-5-image"
+              />
             </div>
           </div>
-        </div>
+        </Slide>
 
-        {/* Slide 6 - Early Warning Systems */}
-        <div className={`slide slide-6 ${currentSlide === 6 ? "active" : ""}`}>
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Early Warning Systems</h1>
-              <p className="slide-subtitle">Saving Lives Through Technology</p>
-              <div className="slide-description">
-                <p className="slide-intro-text">
-                  Effective early warning systems combine multiple data sources
-                  to provide timely and accurate flood predictions.
-                </p>
-                <ul className="slide-list">
-                  <li>
-                    Weather radar and satellite monitoring for precipitation
-                    tracking
-                  </li>
-                  <li>
-                    River gauges and water level sensors for real-time
-                    measurements
-                  </li>
-                  <li>
-                    Hydrological models predicting water flow and accumulation
-                  </li>
-                  <li>Mobile alerts and emergency broadcasting systems</li>
-                  <li>
-                    Community-based monitoring and rapid response protocols
-                  </li>
-                </ul>
+        {/* Slide 7 - Our Mission (replaces previous Modern Solutions slide) */}
+        <Slide index={6} currentSlide={currentSlide} className="slide-6">
+          <h1 className="slide-title">Our Mission</h1>
+          <div className="slide-description">
+            <div className="mission-icons" aria-hidden="false">
+              <div className="mission-icon">
+                <CloudRain size={28} color="var(--primary-color)" />
+                <div className="mission-icon-label">Real-time data</div>
+              </div>
+              <div className="mission-icon">
+                <BarChart2 size={28} color="var(--primary-color)" />
+                <div className="mission-icon-label">Predictive analytics</div>
+              </div>
+              <div className="mission-icon">
+                <Users size={28} color="var(--primary-color)" />
+                <div className="mission-icon-label">Community</div>
+              </div>
+              <div className="mission-icon">
+                <FileText size={28} color="var(--primary-color)" />
+                <div className="mission-icon-label">Reports</div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Slide 7 - Infrastructure & Prevention */}
-        <div className={`slide slide-7 ${currentSlide === 7 ? "active" : ""}`}>
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Infrastructure & Prevention</h1>
-              <p className="slide-subtitle">Building Resilient Communities</p>
-              <div className="slide-description">
-                <ul className="slide-list">
-                  <li>
-                    <strong>Levees and Floodwalls:</strong> Physical barriers
-                    protecting populated areas from overflow
-                  </li>
-                  <li>
-                    <strong>Retention Basins:</strong> Temporary storage areas
-                    that control water flow during heavy rainfall
-                  </li>
-                  <li>
-                    <strong>Green Infrastructure:</strong> Wetlands, parks, and
-                    permeable surfaces that naturally absorb water
-                  </li>
-                  <li>
-                    <strong>Improved Drainage:</strong> Modern systems designed
-                    for extreme weather events
-                  </li>
-                  <li>
-                    <strong>Zoning Regulations:</strong> Restricting development
-                    in high-risk flood zones
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <p>
+              To empower communities with timely, accurate flood risk
+              information derived from real-time weather data and predictive
+              analytics, enhancing preparedness and resilience against natural
+              disasters. We aim to bridge the gap between data, technology, and
+              public awareness to reduce the devastating impacts of floods on
+              lives, agriculture, and infrastructure.
+            </p>
           </div>
-        </div>
+        </Slide>
 
-        {/* Slide 8 - Our Mission */}
-        <div className={`slide slide-8 ${currentSlide === 8 ? "active" : ""}`}>
-          <div className="slide-content">
-            <div className="content-inner">
-              <h1 className="slide-title">Our Mission</h1>
-              <p className="slide-subtitle">Making a Difference Together</p>
-              <div className="slide-description">
-                <p className="mission-text-large">
-                  Floods Insights is committed to reducing the impact of floods
-                  through innovation, education, and community engagement.
-                </p>
-                <ul className="slide-list">
-                  <li>
-                    Providing accessible flood risk information to communities
-                    worldwide
-                  </li>
-                  <li>
-                    Developing advanced prediction models using AI and machine
-                    learning
-                  </li>
-                  <li>
-                    Collaborating with governments and organizations for better
-                    preparedness
-                  </li>
-                  <li>
-                    Educating the public about flood risks and prevention
-                    strategies
-                  </li>
-                  <li>
-                    Contributing to global climate adaptation and resilience
-                    efforts
-                  </li>
-                </ul>
+        {/* Slide 8 - Infrastructure & Prevention */}
+        {/* Slide 8 - Our Solutions */}
+        <Slide
+          index={7}
+          currentSlide={currentSlide}
+          className="slide-7"
+          bgImage={ourSolutionBg}
+        >
+          <h1 className="slide-title">Our Solutions</h1>
+          <p className="slide-subtitle">
+            Eye of Hapi — interactive monitoring, prediction, and community
+          </p>
+          <div className="slide-description">
+            <ul className="slide-list">
+              <li>
+                <strong>Interactive Map:</strong> Click any point to view live
+                weather attributes and local observations.
+              </li>
+              <li>
+                <strong>Real-time Monitoring:</strong> Continuous weather and
+                sensor feeds for immediate situational awareness.
+              </li>
+              <li>
+                <strong>Flood Probability Prediction:</strong> Model-driven risk
+                level (Very Low → Very High) for each location.
+              </li>
+              <li>
+                <strong>Community Reporting:</strong> Share posts, photos and
+                local updates to inform neighbors and responders.
+              </li>
+              <li>
+                <strong>Reports & Visualizations:</strong> Exportable reports,
+                charts, and historical trend views for analysis.
+              </li>
+            </ul>
+          </div>
+        </Slide>
+
+        {/* Slide 9 - Technologies */}
+        <Slide index={8} currentSlide={currentSlide} className="slide-8">
+          <h1 className="slide-title">Technologies</h1>
+          <p className="slide-subtitle">
+            Tools & libraries used to build <strong>Eye of Hapi</strong>
+          </p>
+          <div className="slide-description">
+            <div className="tech-grid" role="list">
+              <div className="tech-item" role="listitem">
+                <img className="tech-icon" src={reactIcon} alt="React" />
+                <div className="tech-label">React</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img className="tech-icon" src="/vite.svg" alt="Vite" />
+                <div className="tech-label">Vite</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+                  alt="JavaScript"
+                />
+                <div className="tech-label">JavaScript</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg"
+                  alt="CSS"
+                />
+                <div className="tech-label">CSS</div>
+              </div>
+
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg"
+                  alt="Node.js"
+                />
+                <div className="tech-label">Node.js</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg"
+                  alt="Express"
+                />
+                <div className="tech-label">Express</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg"
+                  alt="PostgreSQL"
+                />
+                <div className="tech-label">PostgreSQL</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg"
+                  alt="Python"
+                />
+                <div className="tech-label">Python</div>
+              </div>
+
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg"
+                  alt="Pandas"
+                />
+                <div className="tech-label">Pandas</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img
+                  className="tech-icon"
+                  src={scikitIcon}
+                  alt="scikit-learn"
+                />
+                <div className="tech-label">scikit-learn</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img className="tech-icon" src={jsPdfIcon} alt="jsPDF" />
+                <div className="tech-label">jsPDF / Reports</div>
+              </div>
+              <div className="tech-item" role="listitem">
+                <img className="tech-icon" src={arcgisPro} alt="ArcGIS Pro" />
+                <div className="tech-label">ArcGIS Pro / ArcGIS Online</div>
               </div>
             </div>
+
+            <p style={{ marginTop: "1rem" }}>
+              <strong>Data science & collection:</strong> Model training and
+              evaluation (Python, Pandas, scikit-learn). <br />{" "}
+              <strong>ArcGIS tools</strong> used for mapping and spatial
+              analysis.
+            </p>
           </div>
-        </div>
+        </Slide>
+
+        {/* Slide 10 - Thank You / Celebration */}
+        <Slide index={9} currentSlide={currentSlide} className="slide-9">
+          <div className="thankyou-wrap">
+            <div className="thankyou-panel">
+              <h1 className="slide-title">Thank you for your attention</h1>
+              <p className="slide-subtitle">
+                Stay safe — and keep an eye on the water.
+              </p>
+            </div>
+
+            <div className="celebration">
+              <div className="confetti" aria-hidden="true">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className={`confetti-piece p${i % 6}`} />
+                ))}
+              </div>
+
+              <div className="water-wave" aria-hidden="true" />
+            </div>
+          </div>
+        </Slide>
       </div>
 
       <div className="history-graph-section">

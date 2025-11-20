@@ -13,7 +13,6 @@ import RequireAuth from "../components/Auth/RequireAuth";
 
 export default function Community() {
   const navigate = useNavigate();
-  // posts loaded from API
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
