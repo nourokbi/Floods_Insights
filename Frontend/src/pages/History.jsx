@@ -2,14 +2,22 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import "./History.css";
 import useSlideNavigation from "../hooks/useSlideNavigation";
 import SlideIndicator from "../components/history/SlideIndicator";
-import slide3Chart from "../assets/history/chart.png";
+import slide1Bg from "../assets/history/slide1-bg.jpg";
+import slide1Img from "../assets/history/slide1-img.jpg";
+import damFailure from "../assets/history/dam-failure.jpg";
+import flashFlood from "../assets/history/flash-flood.jpg";
+import riverFlood from "../assets/history/river-flood.jpg";
+import coastalFlood from "../assets/history/coastal-flooding.jpg";
+import slide3Bg from "../assets/history/slide3-bg.jpg";
+import slide4Bg from "../assets/history/slide4-bg.png";
+import chartImg from "../assets/history/chart.png";
 // import NavigationArrows from "../components/history/NavigationArrows";
 
 export default function History() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const glowRef = useRef(null);
-  const totalSlides = 8; // Total number of slides
+  const totalSlides = 9; // Total number of slides
 
   const goToSlide = useCallback(
     (slideIndex) => {
@@ -70,89 +78,145 @@ export default function History() {
       <div ref={glowRef} className="mouse-glow"></div>
 
       <div className="slides-container">
-        {/* Slide 1 - Introduction */}
-        <div className={`slide slide-1 ${currentSlide === 0 ? "active" : ""}`}>
+        {/* Slide 1 - Introduction (two-column: text left, image right) */}
+        <div
+          className={`slide slide-1 ${currentSlide === 0 ? "active" : ""}`}
+          style={{ backgroundImage: `url(${slide1Bg})` }}
+        >
           <div className="slide-content">
-            <h1 className="slide-title">Floods Definition and Causes</h1>
-            {/* <p className="slide-subtitle" >
-              Understanding and Predicting Natural Disasters
-            </p> */}
-            <div className="slide-description">
-              <p className="intro-text-large">
-                Floods happen when water overflows onto normally dry land due to natural or human-made factors such as heavy rain, melting snow, storm surges, or dam failures. They may develop quickly or over several days and can damage homes, infrastructure, farms, and endanger lives.
-              </p>
-              <p>
-                Flooding occurs when rivers, lakes, or seas exceed their limits or when the ground cannot absorb water fast enough. Major causes include intense or long-lasting rain, rapid snowmelt, tsunamis, dam breaks, or poor drainage systems.
-              </p>
+            <div className="content-inner">
+              <h1 className="slide-title">What Is a Flood?</h1>
+              <div className="slide-1-layout">
+                <div className="slide-1-text">
+                  <p className="intro-text-large">
+                    Floods occur when water covers land that’s normally dry,
+                    often caused by heavy rain, rapid snowmelt, storm surges, or
+                    infrastructure failures. They can develop slowly or strike
+                    suddenly as flash floods.
+                  </p>
+
+                  <p className="intro-text-large">
+                    They may strike suddenly or build up over time, lasting from
+                    hours to weeks and damaging homes and infrastructure.
+                  </p>
+
+                  <p className="intro-text-large">
+                    Flooding happens when water overflows rivers or coasts, or
+                    when rain falls faster than the ground can absorb it.
+                  </p>
+                </div>
+                <div className="slide-1-image-wrapper">
+                  <img
+                    src={slide1Img}
+                    alt="Flood scene"
+                    className="slide-1-image"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Slide 2 - Types of Floods */}
-        <div className={`slide slide-2 ${currentSlide === 1 ? "active" : ""}`}>
+        <div
+          className={`slide slide-2 ${currentSlide === 1 ? "active" : ""}`}
+          style={{ backgroundImage: `url(${damFailure})` }}
+        >
           <div className="slide-content">
-            <h1 className="slide-title">Types of Floods</h1>
-            <p className="slide-subtitle">
-              Understanding Different Flood Categories
-            </p>
-            <div className="slide-description">
-              <ul className="slide-list">
-                <li>
-                  <strong>Flash Floods:</strong> Happen rapidly, often within minutes to hours of heavy rain, leading to dangerous and sudden water rises.
-                </li>
-                <li>
-                  <strong>River Floods:</strong> When rivers or streams exceed capacity due to sustained rain or snowmelt.
-
-                </li>
-                <li>
-                  <strong>Coastal Floods:</strong> Caused by oceanic surges from tropical cyclones, tsunamis, or high tides.
-                </li>
-                <li>
-                  <strong>Urban Floods:</strong> Result from heavy rain overwhelming city drainage, regardless of proximity to rivers or seas.
-                </li>
-              </ul>
+            <div className="content-inner">
+              <h1 className="slide-title">Types of Floods</h1>
+              <p className="slide-subtitle">
+                Common flood types and typical causes
+              </p>
+              <div className="slide-description">
+                <ul className="slide-list">
+                  <li>
+                    <strong>River (Fluvial) Floods:</strong> Occur when rivers
+                    overflow due to heavy rainfall or snowmelt, inundating
+                    adjacent floodplains.
+                  </li>
+                  <li>
+                    <strong>Coastal Floods:</strong> Caused by storm surge, high
+                    tides, and rising sea levels, affecting coastal communities.
+                  </li>
+                  <li>
+                    <strong>Flash Floods:</strong> Rapid flooding following
+                    intense short-duration rainfall or dam failures, with little
+                    warning time.
+                  </li>
+                  <li>
+                    <strong>Urban (Pluvial) Floods:</strong> Result from
+                    overwhelmed drainage in built environments, where
+                    impermeable surfaces prevent absorption.
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Slide 3 - Climate Change */}
-        <div className={`slide slide-3 ${currentSlide === 2 ? "active" : ""}`}>
+        {/* Slide 3 - Flood Examples (gallery) */}
+        <div
+          className={`slide gallery ${currentSlide === 2 ? "active" : ""}`}
+          style={{ backgroundImage: `url(${slide3Bg})` }}
+        >
           <div className="slide-content">
-            <h1 className="slide-title">Climate Change Impact</h1>
-            <p className="slide-subtitle">Rising Risks and Challenges</p>
-            <div className="slide-description">
-              <p className="slide-intro-text">
-                Climate change strongly affects how often and how severely floods
-                occur. Warmer global temperatures allow the atmosphere to hold
-                more moisture, resulting in heavier and more intense rainfall that
-                can overwhelm rivers, drainage systems, and flood defenses,
-                increasing both river and flash floods.
-              </p>
-              <p>
-                Rising sea levels—caused by melting glaciers and the expansion of
-                warmer seawater—also worsen coastal flooding by enabling storm
-                surges and high tides to reach farther inland. In addition, climate
-                change makes precipitation patterns more unpredictable and
-                variable.
-              </p>
+            <div className="content-inner">
+              <h1 className="slide-title">Flood Examples</h1>
+              <div className="slide-3-grid">
+                <div className="img-card">
+                  <img src={flashFlood} alt="Flash flood" />
+                  <p className="img-caption">Flash Flood</p>
+                </div>
+                <div className="img-card">
+                  <img src={riverFlood} alt="River flood" />
+                  <p className="img-caption">River Flood</p>
+                </div>
+                <div className="img-card">
+                  <img src={damFailure} alt="Dam failure" />
+                  <p className="img-caption">Dam Failure</p>
+                </div>
+                <div className="img-card">
+                  <img src={coastalFlood} alt="Coastal flooding" />
+                  <p className="img-caption">Coastal Flooding</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Slide 4 - Climate Change */}
+        <div
+          className={`slide slide-3 ${currentSlide === 3 ? "active" : ""}`}
+          style={{ backgroundImage: `url(${slide4Bg})` }}
+        >
+          <div className="slide-content">
+            <div className="content-inner">
+              <h1 className="slide-title">Climate Change Impact</h1>
+              <div className="slide-description">
+                <p className="slide-intro-text">
+                  Climate change strongly affects how often and how severely
+                  floods occur. Warmer global temperatures allow the atmosphere
+                  to hold more moisture, resulting in heavier and more intense
+                  rainfall that can overwhelm rivers, drainage systems, and
+                  flood defenses.
+                </p>
+                <p>
+                  Rising sea levels and changing precipitation patterns increase
+                  both coastal and inland flood risks worldwide.
+                </p>
+              </div>
+              <div className="slide-chart">
+                <img src={chartImg} alt="Climate change chart" />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Slide 4 - Historical Impact */}
-        <div className={`slide slide-4 ${currentSlide === 3 ? "active" : ""}`}>
-          <div className="slide-content slide-2-layout">
-            {/* Left Side - Image */}
-            <div className="slide-2-image-wrapper">
-              <img
-                src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=1200&q=80"
-                alt="Devastating flood disaster"
-                className="slide-2-image"
-              />
-            </div>
-
-            {/* Right Side - Text Content */}
-            <div className="slide-2-text">
+        <div className={`slide slide-4 ${currentSlide === 4 ? "active" : ""}`}>
+          <div className="slide-content">
+            <div className="content-inner">
               <h1 className="slide-title">Historical Impact</h1>
               <p className="slide-subtitle">
                 Devastating Flood Events Through Time
@@ -186,131 +250,141 @@ export default function History() {
         </div>
 
         {/* Slide 5 - Modern Solutions */}
-        <div className={`slide slide-5 ${currentSlide === 4 ? "active" : ""}`}>
+        <div className={`slide slide-5 ${currentSlide === 5 ? "active" : ""}`}>
           <div className="slide-content">
-            <h1 className="slide-title">Modern Solutions</h1>
-            <p className="slide-subtitle">
-              Technology and Prevention Strategies
-            </p>
-            <div className="slide-description">
-              <ul className="slide-list">
-                <li>
-                  <strong>Real-time Monitoring:</strong> Satellite imagery and
-                  IoT sensors provide continuous data on water levels and
-                  weather patterns
-                </li>
-                <li>
-                  <strong>AI Prediction Models:</strong> Machine learning
-                  algorithms analyze historical data to forecast flood events
-                  with high accuracy
-                </li>
-                <li>
-                  <strong>Early Warning Systems:</strong> Automated alerts
-                  notify communities hours or days before flooding occurs
-                </li>
-                <li>
-                  <strong>Smart Infrastructure:</strong> Adaptive drainage
-                  systems and flood barriers that respond to real-time
-                  conditions
-                </li>
-              </ul>
+            <div className="content-inner">
+              <h1 className="slide-title">Modern Solutions</h1>
+              <p className="slide-subtitle">
+                Technology and Prevention Strategies
+              </p>
+              <div className="slide-description">
+                <ul className="slide-list">
+                  <li>
+                    <strong>Real-time Monitoring:</strong> Satellite imagery and
+                    IoT sensors provide continuous data on water levels and
+                    weather patterns
+                  </li>
+                  <li>
+                    <strong>AI Prediction Models:</strong> Machine learning
+                    algorithms analyze historical data to forecast flood events
+                    with high accuracy
+                  </li>
+                  <li>
+                    <strong>Early Warning Systems:</strong> Automated alerts
+                    notify communities hours or days before flooding occurs
+                  </li>
+                  <li>
+                    <strong>Smart Infrastructure:</strong> Adaptive drainage
+                    systems and flood barriers that respond to real-time
+                    conditions
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Slide 6 - Early Warning Systems */}
-        <div className={`slide slide-6 ${currentSlide === 5 ? "active" : ""}`}>
+        <div className={`slide slide-6 ${currentSlide === 6 ? "active" : ""}`}>
           <div className="slide-content">
-            <h1 className="slide-title">Early Warning Systems</h1>
-            <p className="slide-subtitle">Saving Lives Through Technology</p>
-            <div className="slide-description">
-              <p className="slide-intro-text">
-                Effective early warning systems combine multiple data sources to
-                provide timely and accurate flood predictions.
-              </p>
-              <ul className="slide-list">
-                <li>
-                  Weather radar and satellite monitoring for precipitation
-                  tracking
-                </li>
-                <li>
-                  River gauges and water level sensors for real-time
-                  measurements
-                </li>
-                <li>
-                  Hydrological models predicting water flow and accumulation
-                </li>
-                <li>Mobile alerts and emergency broadcasting systems</li>
-                <li>Community-based monitoring and rapid response protocols</li>
-              </ul>
+            <div className="content-inner">
+              <h1 className="slide-title">Early Warning Systems</h1>
+              <p className="slide-subtitle">Saving Lives Through Technology</p>
+              <div className="slide-description">
+                <p className="slide-intro-text">
+                  Effective early warning systems combine multiple data sources
+                  to provide timely and accurate flood predictions.
+                </p>
+                <ul className="slide-list">
+                  <li>
+                    Weather radar and satellite monitoring for precipitation
+                    tracking
+                  </li>
+                  <li>
+                    River gauges and water level sensors for real-time
+                    measurements
+                  </li>
+                  <li>
+                    Hydrological models predicting water flow and accumulation
+                  </li>
+                  <li>Mobile alerts and emergency broadcasting systems</li>
+                  <li>
+                    Community-based monitoring and rapid response protocols
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Slide 7 - Infrastructure & Prevention */}
-        <div className={`slide slide-7 ${currentSlide === 6 ? "active" : ""}`}>
+        <div className={`slide slide-7 ${currentSlide === 7 ? "active" : ""}`}>
           <div className="slide-content">
-            <h1 className="slide-title">Infrastructure & Prevention</h1>
-            <p className="slide-subtitle">Building Resilient Communities</p>
-            <div className="slide-description">
-              <ul className="slide-list">
-                <li>
-                  <strong>Levees and Floodwalls:</strong> Physical barriers
-                  protecting populated areas from overflow
-                </li>
-                <li>
-                  <strong>Retention Basins:</strong> Temporary storage areas
-                  that control water flow during heavy rainfall
-                </li>
-                <li>
-                  <strong>Green Infrastructure:</strong> Wetlands, parks, and
-                  permeable surfaces that naturally absorb water
-                </li>
-                <li>
-                  <strong>Improved Drainage:</strong> Modern systems designed
-                  for extreme weather events
-                </li>
-                <li>
-                  <strong>Zoning Regulations:</strong> Restricting development
-                  in high-risk flood zones
-                </li>
-              </ul>
+            <div className="content-inner">
+              <h1 className="slide-title">Infrastructure & Prevention</h1>
+              <p className="slide-subtitle">Building Resilient Communities</p>
+              <div className="slide-description">
+                <ul className="slide-list">
+                  <li>
+                    <strong>Levees and Floodwalls:</strong> Physical barriers
+                    protecting populated areas from overflow
+                  </li>
+                  <li>
+                    <strong>Retention Basins:</strong> Temporary storage areas
+                    that control water flow during heavy rainfall
+                  </li>
+                  <li>
+                    <strong>Green Infrastructure:</strong> Wetlands, parks, and
+                    permeable surfaces that naturally absorb water
+                  </li>
+                  <li>
+                    <strong>Improved Drainage:</strong> Modern systems designed
+                    for extreme weather events
+                  </li>
+                  <li>
+                    <strong>Zoning Regulations:</strong> Restricting development
+                    in high-risk flood zones
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Slide 8 - Our Mission */}
-        <div className={`slide slide-8 ${currentSlide === 7 ? "active" : ""}`}>
+        <div className={`slide slide-8 ${currentSlide === 8 ? "active" : ""}`}>
           <div className="slide-content">
-            <h1 className="slide-title">Our Mission</h1>
-            <p className="slide-subtitle">Making a Difference Together</p>
-            <div className="slide-description">
-              <p className="mission-text-large">
-                Floods Insights is committed to reducing the impact of floods
-                through innovation, education, and community engagement.
-              </p>
-              <ul className="slide-list">
-                <li>
-                  Providing accessible flood risk information to communities
-                  worldwide
-                </li>
-                <li>
-                  Developing advanced prediction models using AI and machine
-                  learning
-                </li>
-                <li>
-                  Collaborating with governments and organizations for better
-                  preparedness
-                </li>
-                <li>
-                  Educating the public about flood risks and prevention
-                  strategies
-                </li>
-                <li>
-                  Contributing to global climate adaptation and resilience
-                  efforts
-                </li>
-              </ul>
+            <div className="content-inner">
+              <h1 className="slide-title">Our Mission</h1>
+              <p className="slide-subtitle">Making a Difference Together</p>
+              <div className="slide-description">
+                <p className="mission-text-large">
+                  Floods Insights is committed to reducing the impact of floods
+                  through innovation, education, and community engagement.
+                </p>
+                <ul className="slide-list">
+                  <li>
+                    Providing accessible flood risk information to communities
+                    worldwide
+                  </li>
+                  <li>
+                    Developing advanced prediction models using AI and machine
+                    learning
+                  </li>
+                  <li>
+                    Collaborating with governments and organizations for better
+                    preparedness
+                  </li>
+                  <li>
+                    Educating the public about flood risks and prevention
+                    strategies
+                  </li>
+                  <li>
+                    Contributing to global climate adaptation and resilience
+                    efforts
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
