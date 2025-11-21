@@ -1,9 +1,3 @@
-export const ENDPOINTS = {
-  reports: `${API_BASE}/api/reports`,
-  comments: `${API_BASE}/api/comments`,
-  bookmarks: `${API_BASE}/api/bookmarks`,
-  likes: `${API_BASE}/api/likes`,
-};
 // ChatBot base URLs
 export const CHAT_BOT_BASE_URL = {
   local: "localhost:3000",
