@@ -1,3 +1,51 @@
+/* Mobile styles for What Is a Flood slide */
+@media (max-width: 600px) {
+  .slide-1 .slide-title {
+    font-size: 2.5rem !important;
+    margin-bottom: 0.5rem;
+  }
+  .slide-1 > * {
+    padding: 0;
+  }
+  .slide-1 .intro-text-large {
+    font-size: 1.25rem !important;
+    margin-bottom: 0.3rem;
+    padding: 0.2rem 0.1rem;
+  }
+  .slide-1 .slide-1-image {
+    max-width: 70vw;
+    height: auto;
+  }
+}
+/* Mobile styles for Our Mission & Solutions slide */
+@media (max-width: 600px) {
+  .slide-6 .slide-title {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    /* padding: 0; */
+  }
+  .slide-6 .slide-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 0;
+  }
+  .slide-6 .slide-description {
+    padding: 5px;
+  }
+  .slide-6 .slide-description p {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    padding: 0;
+  }
+  .slide-6 .slide-list {
+    /* margin-top: 0.5rem !important; */
+  }
+  .slide-6 .slide-list li {
+    font-size: 0.85rem;
+    padding-block: 0;
+    margin-bottom: 0.15rem;
+  }
+}
 .history-page {
   width: 100%;
   height: calc(100vh - 70.47px - 55.64px);
@@ -115,7 +163,8 @@
 }
 
 .slide-1-text .slide-title {
-  text-align: left;
+  /* text-align: left; */
+  font-size: 3.6rem;
 }
 
 .slide-1-image-wrapper {
@@ -143,7 +192,7 @@
 
 /* Make Slide 1 more compact: smaller title and single-column layout; hide image */
 .slide-1 .slide-title {
-  font-size: 2rem;
+  font-size: 4rem;
 }
 
 .slide-1-layout {
@@ -249,6 +298,7 @@
     gap: 1.25rem;
   }
   .slide-1-image {
+    display: none;
     max-height: 260px;
   }
 }
@@ -536,6 +586,10 @@
 
 .slide-8 {
   background-image: url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1920&h=1080&fit=crop");
+}
+
+.slide-8 p {
+  padding: 0;
 }
 
 .slide-3-grid {

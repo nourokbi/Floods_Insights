@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import { API_BASE } from "../config/api";
+import { ENDPOINTS } from "../config/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AddPostForm from "../components/community/AddPostForm";
@@ -29,7 +29,7 @@ export default function Community() {
     setLoading(true);
     setFetchError(null);
     try {
-      const res = await axios.get(`${API_BASE}/api/reports`);
+      const res = await axios.get(ENDPOINTS.reports);
       const data = res.data;
       if (!mountedRef.current) return;
 
@@ -61,7 +61,7 @@ export default function Community() {
         try {
           const commentFetches = apiPosts.map((p) =>
             axios
-              .get(`${API_BASE}/api/comments/report/${p.id}`, {
+              .get(`${ENDPOINTS.comments}/report/${p.id}`, {
                 headers: {
                   ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 },
@@ -99,7 +99,7 @@ export default function Community() {
         if (token) {
           try {
             const bookmarked = await axios.get(
-              `${API_BASE}/api/bookmarks/my?limit=1000`,
+              `${ENDPOINTS.bookmarks}/my?limit=1000`,
               {
                 headers: {
                   ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -118,7 +118,7 @@ export default function Community() {
           }
           // also fetch likes for the current user so liked posts show active
           try {
-            const lk = await axios.get(`${API_BASE}/api/likes/my?limit=1000`, {
+            const lk = await axios.get(`${ENDPOINTS.likes}/my?limit=1000`, {
               headers: {
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
               },
@@ -213,7 +213,7 @@ export default function Community() {
       const headers = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const res = await axios.post(`${API_BASE}/api/reports`, payload, {
+      const res = await axios.post(ENDPOINTS.reports, payload, {
         headers,
       });
 
@@ -293,7 +293,7 @@ export default function Community() {
     setConfirmOpen(false);
     setPostToDelete(null);
     try {
-      await axios.delete(`${API_BASE}/api/reports/${postId}`, {
+      await axios.delete(`${ENDPOINTS.reports}/${postId}`, {
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -334,7 +334,7 @@ export default function Community() {
 
     try {
       await axios.post(
-        `${API_BASE}/api/likes/toggle`,
+        `${ENDPOINTS.likes}/toggle`,
         { report_id: Number(postId) },
         {
           headers: {
@@ -374,7 +374,7 @@ export default function Community() {
 
     try {
       await axios.post(
-        `${API_BASE}/api/bookmarks/toggle`,
+        `${ENDPOINTS.bookmarks}/toggle`,
         { report_id: Number(postId) },
         {
           headers: {
@@ -425,7 +425,7 @@ export default function Community() {
     (async () => {
       try {
         const res = await axios.post(
-          `${API_BASE}/api/comments`,
+          ENDPOINTS.comments,
           { report_id: Number(postId), comment_text: commentText },
           {
             headers: {

@@ -1,5 +1,22 @@
-// Central API configuration. Change `REACT_APP_API_BASE` in environment
-// to override the default local host. Keep onrender URL available for quick switching.
+export const ENDPOINTS = {
+  reports: `${API_BASE}/api/reports`,
+  comments: `${API_BASE}/api/comments`,
+  bookmarks: `${API_BASE}/api/bookmarks`,
+  likes: `${API_BASE}/api/likes`,
+};
+// ChatBot base URLs
+export const CHAT_BOT_BASE_URL = {
+  local: "localhost:3000",
+  onrender: "https://chat-bot-8yb9.onrender.com",
+};
+
+// AI Model API Base URL
+export const INFO_SIDEBAR_BASE_URL = {
+  local: "localhost:8000",
+  onrender: "https://weathering-api.onrender.com/",
+};
+
+// Community API Base urls
 const API_HOSTS = {
   local: "http://localhost:5555",
   onrender: "https://kartak-demo-od0f.onrender.com",

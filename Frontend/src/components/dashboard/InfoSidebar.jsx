@@ -1,7 +1,15 @@
-import { BarChart3, AlertTriangle, Calendar, Clock, Download } from "lucide-react";
+import {
+  BarChart3,
+  AlertTriangle,
+  Calendar,
+  Clock,
+  Download,
+} from "lucide-react";
 import "./InfoSidebar.css";
 import { useEffect, useState } from "react";
+
 import generatePdfReport from "../../utils/generateReportClean";
+import { INFO_SIDEBAR_BASE_URL } from "../../config/api";
 
 function InfoSidebar({
   selectedPoint,
@@ -34,7 +42,7 @@ function InfoSidebar({
       setPredLoading(true);
       setPredError(null);
       try {
-        const url = new URL("http://localhost:8000/api/predict");
+        const url = new URL(`${INFO_SIDEBAR_BASE_URL.onrender}api/predict`);
         url.searchParams.set("lat", String(selectedPoint.latitude));
         url.searchParams.set("lon", String(selectedPoint.longitude));
         const resp = await fetch(url.toString());

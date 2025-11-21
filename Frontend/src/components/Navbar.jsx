@@ -122,7 +122,7 @@ function Navbar() {
               alt="Floods Insights Logo"
               className="logo-image"
             />
-            <span className="logo-text">Eye Of Habi</span>
+            <span className="logo-text">Eye Of Hapi</span>
           </Link>
 
           <ul

@@ -41,11 +41,11 @@ export default function History() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const glowRef = useRef(null);
-  const totalSlides = 10; // increased to include final Thank You slide
+  const totalSlides = 9; // updated to match actual slide count
   const confettiTriggeredRef = useRef(false);
   // Trigger confetti when arriving at Thank You slide
   useEffect(() => {
-    if (currentSlide === 9 && !confettiTriggeredRef.current) {
+    if (currentSlide === 8 && !confettiTriggeredRef.current) {
       confettiTriggeredRef.current = true;
       const myConfetti = confetti.create(null, {
         resize: true,
@@ -75,7 +75,7 @@ export default function History() {
       }
       frame();
     }
-    if (currentSlide !== 9) {
+    if (currentSlide !== 8) {
       confettiTriggeredRef.current = false;
     }
   }, [currentSlide]);
@@ -145,162 +145,6 @@ export default function History() {
         <Slide
           index={0}
           currentSlide={currentSlide}
-          className="slide-1"
-          bgImage={slide1Bg}
-        >
-          <h1 className="slide-title">What Is a Flood?</h1>
-          <div className="slide-1-layout">
-            <div className="slide-1-text">
-              <p className="intro-text-large">
-                Floods occur when water covers land that’s normally dry, often
-                caused by heavy rain, rapid snowmelt, storm surges, or
-                infrastructure failures. They can develop slowly or strike
-                suddenly as flash floods.
-              </p>
-
-              <p className="intro-text-large">
-                They may strike suddenly or build up over time, lasting from
-                hours to weeks and damaging homes and infrastructure.
-              </p>
-
-              <p className="intro-text-large">
-                Flooding happens when water overflows rivers or coasts, or when
-                rain falls faster than the ground can absorb it.
-              </p>
-            </div>
-            <div className="slide-1-image-wrapper">
-              <img
-                src={slide1Img}
-                alt="Flood scene"
-                className="slide-1-image"
-              />
-            </div>
-          </div>
-        </Slide>
-
-        {/* Slide 2 - Types of Floods */}
-        <Slide
-          index={1}
-          currentSlide={currentSlide}
-          className="slide-2"
-          bgImage={damFailure}
-        >
-          <h1 className="slide-title">Types of Floods</h1>
-          <p className="slide-subtitle">
-            Common flood types and typical causes
-          </p>
-          <div className="slide-description">
-            <ul className="slide-list">
-              <li>
-                <strong>River (Fluvial) Floods:</strong> Occur when rivers
-                overflow due to heavy rainfall or snowmelt, inundating adjacent
-                floodplains.
-              </li>
-              <li>
-                <strong>Coastal Floods:</strong> Caused by storm surge, high
-                tides, and rising sea levels, affecting coastal communities.
-              </li>
-              <li>
-                <strong>Flash Floods:</strong> Rapid flooding following intense
-                short-duration rainfall or dam failures, with little warning
-                time.
-              </li>
-              <li>
-                <strong>Urban (Pluvial) Floods:</strong> Result from overwhelmed
-                drainage in built environments, where impermeable surfaces
-                prevent absorption.
-              </li>
-            </ul>
-          </div>
-        </Slide>
-
-        {/* Slide 3 - Flood Examples (gallery) */}
-        <Slide
-          index={2}
-          currentSlide={currentSlide}
-          className="gallery"
-          bgImage={slide3Bg}
-        >
-          <h1 className="slide-title">Flood Examples</h1>
-          <div className="gallery-grid">
-            <div className="img-card">
-              <img src={flashFlood} alt="Flash flood" />
-              <p className="img-caption">Flash Flood</p>
-            </div>
-            <div className="img-card">
-              <img src={riverFlood} alt="River flood" />
-              <p className="img-caption">River Flood</p>
-            </div>
-            <div className="img-card">
-              <img src={damFailure} alt="Dam failure" />
-              <p className="img-caption">Dam Failure</p>
-            </div>
-            <div className="img-card">
-              <img src={coastalFlood} alt="Coastal flooding" />
-              <p className="img-caption">Coastal Flooding</p>
-            </div>
-          </div>
-        </Slide>
-
-        {/* Slide 4 - Climate Change */}
-        <Slide
-          index={3}
-          currentSlide={currentSlide}
-          className="slide-3"
-          bgImage={slide4Bg}
-        >
-          <h1 className="slide-title">Climate Change Impact</h1>
-          <div className="slide-description">
-            <p className="slide-intro-text">
-              Climate change strongly affects how often and how severely floods
-              occur. Warmer global temperatures allow the atmosphere to hold
-              more moisture, resulting in heavier and more intense rainfall that
-              can overwhelm rivers, drainage systems, and flood defenses.
-            </p>
-            <p>
-              Rising sea levels and changing precipitation patterns increase
-              both coastal and inland flood risks worldwide.
-            </p>
-          </div>
-          <div className="slide-chart">
-            <img src={chartImg} alt="Climate change chart" />
-          </div>
-        </Slide>
-
-        {/* Slide 5 - Historical Impact */}
-        <Slide index={4} currentSlide={currentSlide} className="slide-4">
-          <h1 className="slide-title">Historical Impact</h1>
-          <p className="slide-subtitle">
-            Devastating Flood Events Through Time
-          </p>
-          <div className="slide-description">
-            <ul className="slide-list">
-              <li>
-                1931 China Floods - Over 1 million casualties, worst natural
-                disaster
-              </li>
-              <li>
-                1953 North Sea Flood - 2,551 deaths across Netherlands and UK
-              </li>
-              <li>
-                2010 Pakistan Floods - 20 million people affected, $10B damage
-              </li>
-              <li>
-                2011 Thailand Floods - 815 deaths, economic impact of $45
-                billion
-              </li>
-              <li>
-                2013 European Floods - €12 billion in damages across Central
-                Europe
-              </li>
-            </ul>
-          </div>
-        </Slide>
-
-        {/* Slide 6 - Hapi (move here instead of Modern Solutions) */}
-        <Slide
-          index={5}
-          currentSlide={currentSlide}
           className="slide-5"
           bgImage={hapiSlideBg}
         >
@@ -337,81 +181,208 @@ export default function History() {
             </div>
           </div>
         </Slide>
+        <Slide
+          index={1}
+          currentSlide={currentSlide}
+          className="slide-1"
+          bgImage={slide1Bg}
+        >
+          <h1 className="slide-title">What Is a Flood?</h1>
+          <div className="slide-1-layout">
+            <div className="slide-1-text">
+              <p className="intro-text-large">
+                Floods occur when water covers land that’s normally dry, often
+                caused by heavy rain, rapid snowmelt, storm surges, or
+                infrastructure failures. They can develop slowly or strike
+                suddenly as flash floods.
+              </p>
 
-        {/* Slide 7 - Our Mission (replaces previous Modern Solutions slide) */}
-        <Slide index={6} currentSlide={currentSlide} className="slide-6">
-          <h1 className="slide-title">Our Mission</h1>
-          <div className="slide-description">
-            <div className="mission-icons" aria-hidden="false">
-              <div className="mission-icon">
-                <CloudRain size={28} color="var(--primary-color)" />
-                <div className="mission-icon-label">Real-time data</div>
-              </div>
-              <div className="mission-icon">
-                <BarChart2 size={28} color="var(--primary-color)" />
-                <div className="mission-icon-label">Predictive analytics</div>
-              </div>
-              <div className="mission-icon">
-                <Users size={28} color="var(--primary-color)" />
-                <div className="mission-icon-label">Community</div>
-              </div>
-              <div className="mission-icon">
-                <FileText size={28} color="var(--primary-color)" />
-                <div className="mission-icon-label">Reports</div>
-              </div>
+              <p className="intro-text-large">
+                They may strike suddenly or build up over time, lasting from
+                hours to weeks and damaging homes and infrastructure.
+              </p>
+
+              <p className="intro-text-large">
+                Flooding happens when water overflows rivers or coasts, or when
+                rain falls faster than the ground can absorb it.
+              </p>
             </div>
-
-            <p>
-              To empower communities with timely, accurate flood risk
-              information derived from real-time weather data and predictive
-              analytics, enhancing preparedness and resilience against natural
-              disasters. We aim to bridge the gap between data, technology, and
-              public awareness to reduce the devastating impacts of floods on
-              lives, agriculture, and infrastructure.
-            </p>
+            <div className="slide-1-image-wrapper">
+              <img
+                src={slide1Img}
+                alt="Flood scene"
+                className="slide-1-image"
+              />
+            </div>
           </div>
         </Slide>
 
-        {/* Slide 8 - Infrastructure & Prevention */}
-        {/* Slide 8 - Our Solutions */}
+        {/* Slide 2 - Types of Floods */}
         <Slide
-          index={7}
+          index={2}
           currentSlide={currentSlide}
-          className="slide-7"
-          bgImage={ourSolutionBg}
+          className="slide-2"
+          bgImage={damFailure}
         >
-          <h1 className="slide-title">Our Solutions</h1>
+          <h1 className="slide-title">Types of Floods</h1>
           <p className="slide-subtitle">
-            Eye of Hapi — interactive monitoring, prediction, and community
+            Common flood types and typical causes
           </p>
           <div className="slide-description">
             <ul className="slide-list">
               <li>
-                <strong>Interactive Map:</strong> Click any point to view live
-                weather attributes and local observations.
+                <strong>River (Fluvial) Floods:</strong> Occur when rivers
+                overflow due to heavy rainfall or snowmelt, inundating adjacent
+                floodplains.
               </li>
               <li>
-                <strong>Real-time Monitoring:</strong> Continuous weather and
-                sensor feeds for immediate situational awareness.
+                <strong>Coastal Floods:</strong> Caused by storm surge, high
+                tides, and rising sea levels, affecting coastal communities.
               </li>
               <li>
-                <strong>Flood Probability Prediction:</strong> Model-driven risk
-                level (Very Low → Very High) for each location.
+                <strong>Flash Floods:</strong> Rapid flooding following intense
+                short-duration rainfall or dam failures, with little warning
+                time.
               </li>
               <li>
-                <strong>Community Reporting:</strong> Share posts, photos and
-                local updates to inform neighbors and responders.
-              </li>
-              <li>
-                <strong>Reports & Visualizations:</strong> Exportable reports,
-                charts, and historical trend views for analysis.
+                <strong>Urban (Pluvial) Floods:</strong> Result from overwhelmed
+                drainage in built environments, where impermeable surfaces
+                prevent absorption.
               </li>
             </ul>
           </div>
         </Slide>
 
-        {/* Slide 9 - Technologies */}
-        <Slide index={8} currentSlide={currentSlide} className="slide-8">
+        {/* Slide 3 - Flood Examples (gallery) */}
+        <Slide
+          index={3}
+          currentSlide={currentSlide}
+          className="gallery"
+          bgImage={slide3Bg}
+        >
+          <h1 className="slide-title">Flood Examples</h1>
+          <div className="gallery-grid">
+            <div className="img-card">
+              <img src={flashFlood} alt="Flash flood" />
+              <p className="img-caption">Flash Flood</p>
+            </div>
+            <div className="img-card">
+              <img src={riverFlood} alt="River flood" />
+              <p className="img-caption">River Flood</p>
+            </div>
+            <div className="img-card">
+              <img src={damFailure} alt="Dam failure" />
+              <p className="img-caption">Dam Failure</p>
+            </div>
+            <div className="img-card">
+              <img src={coastalFlood} alt="Coastal flooding" />
+              <p className="img-caption">Coastal Flooding</p>
+            </div>
+          </div>
+        </Slide>
+
+        {/* Slide 4 - Climate Change */}
+        <Slide
+          index={4}
+          currentSlide={currentSlide}
+          className="slide-3"
+          bgImage={slide4Bg}
+        >
+          <h1 className="slide-title">Climate Change Impact</h1>
+          <div className="slide-description">
+            <p className="slide-intro-text">
+              Climate change strongly affects how often and how severely floods
+              occur. Warmer global temperatures allow the atmosphere to hold
+              more moisture, resulting in heavier and more intense rainfall that
+              can overwhelm rivers, drainage systems, and flood defenses.
+            </p>
+            <p>
+              Rising sea levels and changing precipitation patterns increase
+              both coastal and inland flood risks worldwide.
+            </p>
+          </div>
+          <div className="slide-chart">
+            <img src={chartImg} alt="Climate change chart" />
+          </div>
+        </Slide>
+
+        {/* Slide 5 - Historical Impact */}
+        <Slide index={5} currentSlide={currentSlide} className="slide-4">
+          <h1 className="slide-title">Historical Impact</h1>
+          <p className="slide-subtitle">
+            Devastating Flood Events Through Time
+          </p>
+          <div className="slide-description">
+            <ul className="slide-list">
+              <li>
+                1931 China Floods - Over 1 million casualties, worst natural
+                disaster
+              </li>
+              <li>
+                1953 North Sea Flood - 2,551 deaths across Netherlands and UK
+              </li>
+              <li>
+                2010 Pakistan Floods - 20 million people affected, $10B damage
+              </li>
+              <li>
+                2011 Thailand Floods - 815 deaths, economic impact of $45
+                billion
+              </li>
+              <li>
+                2013 European Floods - €12 billion in damages across Central
+                Europe
+              </li>
+            </ul>
+          </div>
+        </Slide>
+
+        {/* Our Mission + Our Solutions */}
+        <Slide
+          index={6}
+          currentSlide={currentSlide}
+          className="slide-6"
+          bgImage={ourSolutionBg}
+        >
+          <h1 className="slide-title">Our Mission & Solutions</h1>
+          <p className="slide-subtitle">
+            Eye of Hapi — real-time awareness, prediction & community support
+          </p>
+
+          <div className="slide-description">
+            {/* Short Mission Text */}
+            <p>
+              Supplying real-time, analytics-based flood-risk insights to
+              improve community resilience.
+            </p>
+
+            {/* Short Solutions List */}
+            <ul className="slide-list">
+              <li>
+                <strong>Interactive Map:</strong> View live weather details,
+                local observations, and location-specific conditions.
+              </li>
+              <li>
+                <strong>Real-time Monitoring:</strong> Continuous weather and
+                sensor data for immediate situational awareness.
+              </li>
+              <li>
+                <strong>Flood Risk Prediction:</strong> Model-based probability
+                levels for each location, from very low to very high.
+              </li>
+              <li>
+                <strong>Community Reporting:</strong> Share posts, photos, and
+                on-ground updates to support neighbors and responders.
+              </li>
+              <li>
+                <strong>Reports & Visualizations:</strong> Exportable charts,
+                summaries, and historical trends for analysis.
+              </li>
+            </ul>
+          </div>
+        </Slide>
+
+        {/* Slide 8 - Technologies */}
+        <Slide index={7} currentSlide={currentSlide} className="slide-8">
           <h1 className="slide-title">Technologies</h1>
           <p className="slide-subtitle">
             Tools & libraries used to build <strong>Eye of Hapi</strong>
@@ -502,7 +473,7 @@ export default function History() {
               </div>
             </div>
 
-            <p style={{ marginTop: "1rem" }}>
+            <p>
               <strong>Data science & collection:</strong> Model training and
               evaluation (Python, Pandas, scikit-learn). <br />{" "}
               <strong>ArcGIS tools</strong> used for mapping and spatial
@@ -511,9 +482,9 @@ export default function History() {
           </div>
         </Slide>
 
-        {/* Slide 10 - Thank You / Celebration */}
+        {/* Slide 9 - Thank You / Celebration */}
         <Slide
-          index={9}
+          index={8}
           currentSlide={currentSlide}
           className="slide-9"
           bgImage={thankyouBg}

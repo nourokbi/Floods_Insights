@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { X, Send, MessageSquareText } from "lucide-react";
 import "./ChatBot.css";
+import { CHAT_BOT_BASE_URL } from "../config/api";
 
 export default function ChatBot() {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -37,7 +38,7 @@ export default function ChatBot() {
     setChatInput("");
 
     try {
-      const response = await fetch("http://localhost:3000/api/chat", {
+      const response = await fetch(`${CHAT_BOT_BASE_URL.onrender}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message }),
@@ -65,7 +66,7 @@ export default function ChatBot() {
 
   return (
     <div
-    className="chat-container"
+      className="chat-container"
       style={isHistoryRoute ? { display: "none" } : undefined}
     >
       <button
