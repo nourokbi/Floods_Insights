@@ -3,6 +3,7 @@ import fawzyPhoto from "../../assets/team/Fawzy.jpg";
 import marwanPhoto from "../../assets/team/Marwan.jpg";
 import nourPhoto from "../../assets/team/Nour.jpg";
 import sultanPhoto from "../../assets/team/Sultan.png";
+import hamdyPhoto from "../../assets/team/hamdy.jpg";
 
 const teamMembers = [
   // {
@@ -46,10 +47,10 @@ const teamMembers = [
       "Ensures the integrity و reliability of all geospatial data sources.",
   },
   {
-    name: "Magdy Adel",
-    role: "Project & Operations Lead",
+    name: "Hamdy Sadoun",
+    role: "Project Lead & Military Officer",
     bio: "Overseeing the strategic roadmap, team coordination, and system deployment.",
-    // imagePath: magdyPhoto,
+    imagePath: hamdyPhoto,
     details:
       "A dedicated leader focused on turning technology into real-world impact.",
   },
