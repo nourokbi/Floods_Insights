@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors"; // لإدارة الوصول من الواجهة الأمامية
 
 // 1. تعريف مفتاح API
-const API_KEY = "AIzaSyDbO_p3OFG4z-NCkuFFMf-5HRo3mnrYLNE";
+const API_KEY = "AIzaSyA3AeN-zdypJLjlVxLf_i9hcMaI5K99Hvc";
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // 2. تعليمات النظام (GIS_SYSTEM_INSTRUCTION)

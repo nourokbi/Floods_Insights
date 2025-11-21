@@ -1,17 +1,93 @@
+.add-post-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: white;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #1e293b;
+  border: 2px solid var(--border-color);
+}
+
+.add-post-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+  border-color: #2563eb;
+}
+
+.add-post-toggle:active {
+  transform: translateY(0);
+}
+
+.add-post-toggle span {
+  flex: 1;
+  text-align: left;
+  margin-left: 0.5rem;
+}
+
+.add-post-carousel {
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out,
+    margin 0.3s ease-in-out;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.add-post-carousel.expanded {
+  max-height: 1200px;
+  opacity: 1;
+  margin-top: 1rem;
+}
+
 .add-post-form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.add-post-form h2 {
+  display: none;
 }
 
 .add-post-form input[type="text"],
+.add-post-form input[type="url"],
 .add-post-form textarea,
 .add-post-form select {
   padding: 10px;
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  background: var(--card-bg);
+  background: var(--bg-primary);
   color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.add-post-form input[type="text"]:focus,
+.add-post-form input[type="url"]:focus,
+.add-post-form textarea:focus,
+.add-post-form select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.add-post-form textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 /* coordinates row (latitude + longitude) */
@@ -21,12 +97,17 @@
   align-items: center;
 }
 
+.coords-row input {
+  flex: 1;
+  min-width: 0;
+}
+
 .imagepreview {
   width: 100%;
   max-height: 160px;
   object-fit: cover;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
 }
 
 .image-preview-grid {
@@ -46,11 +127,20 @@
   gap: 8px;
   align-items: center;
   cursor: pointer;
-  padding: 8px 10px;
+  padding: 10px 14px;
   border-radius: 8px;
   border: 2px dashed var(--border-color);
   color: var(--text-secondary);
   background: var(--bg-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.upload-label:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--card-bg);
 }
 
 .hidden-file-input {
@@ -61,38 +151,71 @@
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  padding: 5px 12px;
+  padding: 10px 16px;
   background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.submit-post:hover:not([disabled]) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.submit-post:active:not([disabled]) {
+  transform: translateY(0);
 }
 
 .submit-post[disabled] {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .submit-post.success {
-  background: #28a745; /* green */
+  background: #28a745;
 }
 
 .form-error {
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: rgba(255, 0, 0, 0.06);
   color: #b00020;
   border: 1px solid rgba(176, 0, 32, 0.12);
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 0.9rem;
 }
 
-.coords-row input {
-  flex: 1;
-  min-width: 0;
+.disaster-select {
+  cursor: pointer;
 }
 
 @media (max-width: 520px) {
   .coords-row {
     flex-direction: column;
+  }
+
+  .add-post-toggle {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .add-post-form {
+    padding: 1.25rem;
+  }
+
+  .add-post-form-buttons {
+    flex-direction: column;
+  }
+
+  .upload-label,
+  .submit-post {
+    width: 100%;
+    justify-content: center;
   }
 }

@@ -1,6 +1,6 @@
 // ChatBot base URLs
 export const CHAT_BOT_BASE_URL = {
-  local: "localhost:3000",
+  local: "http://localhost:3000",
   onrender: "https://chat-bot-8yb9.onrender.com",
 };
 

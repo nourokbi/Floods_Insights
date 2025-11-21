@@ -293,7 +293,9 @@ function FloodMap({ onLayerLoad, onViewLoad, onCountryClick, onPointSelect }) {
       if (resizeObserver) {
         try {
           resizeObserver.disconnect();
-        } catch (e) {}
+        } catch (e) {
+          console.log("ResizeObserver disconnect error:", e);
+        }
         resizeObserver = null;
       }
       if (mapRef.current) {

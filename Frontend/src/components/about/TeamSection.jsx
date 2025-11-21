@@ -8,27 +8,19 @@ import hamdyPhoto from "../../assets/team/hamdy.jpg";
 const teamMembers = [
   // {
   //   name: "Nour Eldeen Okbi",
-  //   role: "Front-End Developer",
-  //   bio: "Frontend developer specializing in building responsive, data-driven web applications using React, TypeScript, and modern UI frameworks.",
-  //   imagePath: nourPhoto,
-  //   details:
-  //     "Experienced in React, Next.js, Tailwind, and state management. Worked with geospatial tools like ArcGIS JS SDK and Leaflet to build interactive GIS dashboards.",
-  // },
-  // {
-  //   name: "Nour Eldeen Okbi",
-  //   role: "Front-End Developer",
+  //   role: "Front-End / React Developer",
   //   bio: "Specialized in building responsive, data-driven applications using React, TypeScript, and modern UI frameworks.",
   //   imagePath: nourPhoto,
   //   details:
-  //     "Skilled in React, Next.js, Tailwind, and state management, with hands-on GIS experience using ArcGIS JS SDK and Leaflet.",
+  //     "Skilled in React, Next.js, Tailwind, and state management, with hands-on GIS experience using ArcGIS JS SDK, Leaflet, ArcGIS Online, ArcGIS Pro, and building interactive geospatial dashboards.",
   // },
   {
     name: "Nour Eldeen Okbi",
     role: "Front-End / React Developer",
-    bio: "Specialized in building responsive, data-driven applications using React, TypeScript, and modern UI frameworks.",
+    bio: "Specialized in building responsive, data-driven applications (React, TypeScript) with a focus on Geospatial Web Solutions (GIS).",
     imagePath: nourPhoto,
     details:
-      "Skilled in React, Next.js, Tailwind, and state management, with hands-on GIS experience using ArcGIS JS SDK, Leaflet, ArcGIS Online, ArcGIS Pro, and building interactive geospatial dashboards.",
+      "Expert in React, Next.js, and Tailwind CSS. Proficient in state management and data integration. Specialized in GIS development using ArcGIS JS SDK, Leaflet, ArcGIS Online, and Pro to build interactive geospatial dashboards.",
   },
   {
     name: "Marwan El-mehy",
@@ -56,10 +48,11 @@ const teamMembers = [
   },
   {
     name: "Ahmed Fawzy Fawzy",
-    role: "GIS Specialist",
-    bio: "",
+    role: "GIS & Front-End Developer",
+    bio: "GIS Developer with expertise in Web GIS, spatial analysis, and front-end JavaScript and React.js development.",
     imagePath: fawzyPhoto,
-    details: "",
+    details:
+      "Skilled in Python, ArcGIS, QGIS, GeoServer, and MySQL. Worked on AI-powered apps, spatial analysis tools, and dashboards. Enthusiastic about creativity and problem-solving.",
   },
 ];
 export default function TeamSection() {

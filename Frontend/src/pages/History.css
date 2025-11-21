@@ -1,3 +1,21 @@
+/* Mobile styles for gallery slide: vertical column */
+@media (max-width: 600px) {
+  .gallery-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: center;
+  }
+  .img-card {
+    width: 90vw !important;
+    max-width: 350px;
+  }
+  .img-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+}
 /* Mobile styles for What Is a Flood slide */
 @media (max-width: 600px) {
   .slide-1 .slide-title {
