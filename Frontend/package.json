@@ -12,6 +12,7 @@
   "dependencies": {
     "@arcgis/core": "^4.34.7",
     "axios": "^1.7.7",
+    "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",

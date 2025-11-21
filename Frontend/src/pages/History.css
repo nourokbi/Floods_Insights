@@ -1128,6 +1128,13 @@
     text-align: center;
   }
   /* Reduce slide-2 subtitle margin and list spacing on tablet/mobile */
+  .thankyou-title {
+    font-size: 3.6rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #0b2545;
+    margin-bottom: 0.5rem;
+  }
   .slide-2 .slide-subtitle {
     margin-bottom: 1rem;
   }

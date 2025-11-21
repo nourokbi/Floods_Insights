@@ -18,6 +18,8 @@ import arcgisPro from "../assets/history/arcgis-pro.png";
 import reactIcon from "../assets/react.svg";
 import scikitIcon from "../assets/history/scikit-learn.svg";
 import jsPdfIcon from "../assets/history/jsPDF.svg";
+import thankyouBg from "../assets/history/thankyou-bg.jpg";
+import confetti from "canvas-confetti";
 // Icon set (lucide-react)
 import { CloudRain, BarChart2, Bell, Users, FileText } from "lucide-react";
 
@@ -40,6 +42,43 @@ export default function History() {
   const [isAnimating, setIsAnimating] = useState(false);
   const glowRef = useRef(null);
   const totalSlides = 10; // increased to include final Thank You slide
+  const confettiTriggeredRef = useRef(false);
+  // Trigger confetti when arriving at Thank You slide
+  useEffect(() => {
+    if (currentSlide === 9 && !confettiTriggeredRef.current) {
+      confettiTriggeredRef.current = true;
+      const myConfetti = confetti.create(null, {
+        resize: true,
+        useWorker: true,
+      });
+      const end = Date.now() + 3000;
+      const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"];
+      function frame() {
+        if (Date.now() > end) return;
+        myConfetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          startVelocity: 60,
+          origin: { x: 0, y: 0.5 },
+          colors,
+        });
+        myConfetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          startVelocity: 60,
+          origin: { x: 1, y: 0.5 },
+          colors,
+        });
+        requestAnimationFrame(frame);
+      }
+      frame();
+    }
+    if (currentSlide !== 9) {
+      confettiTriggeredRef.current = false;
+    }
+  }, [currentSlide]);
 
   const goToSlide = useCallback(
     (slideIndex) => {
@@ -473,22 +512,22 @@ export default function History() {
         </Slide>
 
         {/* Slide 10 - Thank You / Celebration */}
-        <Slide index={9} currentSlide={currentSlide} className="slide-9">
+        <Slide
+          index={9}
+          currentSlide={currentSlide}
+          className="slide-9"
+          bgImage={thankyouBg}
+        >
           <div className="thankyou-wrap">
             <div className="thankyou-panel">
-              <h1 className="slide-title">Thank you for your attention</h1>
+              <h1 className="slide-title thankyou-title">
+                Thank you for your attention
+              </h1>
               <p className="slide-subtitle">
                 Stay safe — and keep an eye on the water.
               </p>
             </div>
-
             <div className="celebration">
-              <div className="confetti" aria-hidden="true">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div key={i} className={`confetti-piece p${i % 6}`} />
-                ))}
-              </div>
-
               <div className="water-wave" aria-hidden="true" />
             </div>
           </div>
