@@ -4,9 +4,6 @@ const USGS_FDSN_BASE = "https://earthquake.usgs.gov/fdsnws/event/1/query";
 
 /**
  * Fetch recent earthquakes from USGS
- * @param {number} daysBack - Number of days to look back (default: 30)
- * @param {number} minMagnitude - Minimum magnitude (default: 2.5)
- * @returns {Promise} Earthquake GeoJSON data
  */
 export async function fetchEarthquakes(daysBack = 30, minMagnitude = 2.5) {
   try {
@@ -32,11 +29,6 @@ export async function fetchEarthquakes(daysBack = 30, minMagnitude = 2.5) {
 
 /**
  * Find nearest earthquake to a given coordinate
- * @param {number} lat - Latitude
- * @param {number} lon - Longitude
- * @param {Array} earthquakes - Array of earthquake features from GeoJSON
- * @param {number} maxDistanceKm - Maximum distance to search (default: 100km)
- * @returns {Object|null} Nearest earthquake data or null
  */
 export function findNearestEarthquake(
   lat,
@@ -71,11 +63,6 @@ export function findNearestEarthquake(
 
 /**
  * Calculate distance between two coordinates using Haversine formula
- * @param {number} lat1 - Latitude 1
- * @param {number} lon1 - Longitude 1
- * @param {number} lat2 - Latitude 2
- * @param {number} lon2 - Longitude 2
- * @returns {number} Distance in kilometers
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in km
