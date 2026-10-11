@@ -1,68 +1,60 @@
-# Eye of Hapi
+# Eye of Hapi (Floods Insights)
 
-Eye of Hapi is a comprehensive web application for visualizing flood risk, environmental data, and community-driven disaster insights for selected map locations. It provides interactive map analysis, weather snapshots, earthquake info, historical flood statistics, community posts, saved reports, and exportable PDF reports.
+A web app for exploring flood risk. You pick a point on the map and see a flood-risk prediction, current weather, the nearest recent earthquake and historical flood statistics, then export it all as a PDF report. A community section lets users post and discuss disaster reports.
+
+**Live demo:** [floods-insights.vercel.app](https://floods-insights.vercel.app/)
+
+This was a team project. The repo holds the React frontend, the Express community API and a small GIS chatbot service.
 
 ## Features
 
-- Interactive map with basemap switching, legend, and location search
-- Select a point to run flood risk prediction (Weathering API)
-- Current weather snapshot (Open‑Meteo) and hourly context
-- Nearest earthquake details (USGS feed)
-- Historical flood statistics from ArcGIS FeatureServer
-- Community page for sharing, liking, and saving disaster reports
-- Sidebar with most liked posts and quick actions
-- Add, edit, and delete posts with comments and likes
-- Save/bookmark posts and view them in the Saved page
-- Responsive/mobile-friendly design for all pages
-- Gallery and history pages with vertical mobile layouts
-- Exportable analysis report (PDF) including map screenshot and charts
-- User authentication and protected routes
-- Real-time loading spinners and improved UX for API-driven features
+### Analyze
+- ArcGIS map with basemap switching, a legend and location search
+- Click a point to get a flood-risk prediction from the prediction API
+- Current weather from Open-Meteo
+- Nearest earthquake from the USGS feed
+- Historical flood statistics from an ArcGIS FeatureServer, shown as Chart.js charts
+- PDF report export with a map screenshot and the charts (jsPDF and html2canvas)
 
-## Technologies
+### Community
+- Post disaster reports with images, then edit or delete them
+- Like, comment on and bookmark reports
+- Saved page for bookmarked reports, and a sidebar with the most-liked posts
 
-- Frontend
+### General
+- Register and log in, with protected routes
+- A GIS assistant chatbot
+- History and about pages
+- Responsive layout for mobile and desktop
 
-  - React (JSX)
-  - Vite (dev tooling)
-  - Chart.js (react-chartjs-2) for charts
-  - ArcGIS JavaScript API (map and `mapView.takeScreenshot()`)
-  - jsPDF + html2canvas (client-side PDF export)
-  - Lucide icons for UI icons
-  - CSS modules / component styles
-  - Axios for API calls
-  - Responsive/mobile-first CSS
+## Tech stack
 
-- Backend / Services
+| Part | Tools |
+|---|---|
+| Frontend | React, Vite, React Router, ArcGIS Maps SDK for JavaScript, Chart.js, Axios, jsPDF, html2canvas, lucide-react |
+| Community API | Node.js, Express 5, Knex, PostgreSQL, JWT, bcryptjs, Joi, Multer, Sharp, Cloudinary, Helmet, express-rate-limit |
+| Chatbot | Node.js, Express, Google Gemini API |
+| External data | Open-Meteo, USGS earthquake feed, ArcGIS FeatureServer, a separate flood prediction API |
 
-  - Weathering API (Node/Express) for flood predictions (`/api/predict`)
-  - Open‑Meteo (weather data)
-  - USGS earthquake feeds (nearest quake info)
-  - ArcGIS FeatureServer (historical flood statistics)
-  - Custom endpoints for community posts, likes, bookmarks, and comments
+## Community API
 
-- Tooling
-  - npm / Node.js
-  - ESLint (linting)
-  - git
+The API is split into routes, controllers, models, validation and middleware. Requests are validated with Joi, protected routes check a JWT, uploads go through Multer and Sharp to Cloudinary, and Helmet and a rate limiter are applied to all routes.
 
-## Project Structure (high-level)
+| Base path | What it covers |
+|---|---|
+| `/api/auth` | Register, login, logout, current user, profile update |
+| `/api/reports` | List, read, create, update and delete reports, plus stats and the most-liked reports |
+| `/api/comments` | Comments on a report |
+| `/api/likes` | Toggle a like, like status, counts and who liked a report |
+| `/api/bookmarks` | Toggle a bookmark, my bookmarks, bookmark status and counts |
 
-- `Frontend/` — React app (Vite)
+`Backend/tests/` holds scripts that call a running API to check each feature end to end. They aren't connected to a test runner yet.
 
-  - `src/components/` — UI components (map, panels, legend, switchers, community, auth)
-  - `src/pages/` — top-level routes/pages (Analyze, Community, Saved, History, etc.)
-  - `src/utils/` — helper utilities (report generator, formatters)
-  - `public/` — static assets
-  - `package.json`, `vite.config.js`, etc.
+## Run locally
 
-- `Backend/` — backend services (prediction API, community endpoints)
+Requirements: Node.js 18+, npm, and PostgreSQL for the community API.
 
-## Running Locally
-
-Prerequisites: Node.js (14+), npm
-
-1. Frontend
+### Frontend
 
 ```bash
 cd Frontend
@@ -70,64 +62,60 @@ npm install
 npm run dev
 ```
 
-2. Backend (Weathering API & Community Endpoints)
+The frontend reads its API URLs from `src/config/api.js`. Each service has a local URL and a hosted URL, and you can override the community API with `VITE_API_BASE`.
+
+### Community API
 
 ```bash
 cd Backend
-# follow backend README / install dependencies
 npm install
-npm run dev
-# or start whatever server the backend exposes (check Backend/ README)
+npm start
 ```
 
-Notes:
+Create `Backend/.env`:
 
-- The frontend expects the Weathering API at `http://localhost:5000/api/predict` by default. Adjust `InfoSidebar.jsx` or environment config if your backend uses a different host/port.
-- Community endpoints (posts, likes, bookmarks, comments) are expected at the same base URL (see `src/config/api.js`).
-- ArcGIS and Open‑Meteo calls are made client-side; ensure network access and CORS settings if you host the app remotely.
+```env
+PORT=5000
+DATABASE_URL=postgres://user:password@localhost:5432/eye_of_hapi
+JWT_SECRET=<long random string>
+JWT_EXPIRES_IN=7d
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
 
-## PDF Report Export
+You can use `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` and `DB_PASSWORD` instead of `DATABASE_URL`.
 
-The app uses `jsPDF` and `html2canvas` to generate client-side PDF reports. The generator helper is at `src/utils/generateReportClean.js` and is invoked by `InfoSidebar.jsx` when a point has prediction data available.
+### Chatbot
 
-To improve chart fidelity in the PDF, pass chart refs and use Chart.js's `toBase64Image()` to embed higher-quality images instead of DOM screenshots.
+```bash
+cd chat-Bot
+npm install
+node gis_chat_handler.js
+```
 
-## Adding Images to README / Documentation
+The chatbot needs a Gemini API key. Read it from an environment variable rather than writing it in the code.
 
-To add images:
+## Project structure
 
-- Create a folder: `docs/images/`
-- Add image files (e.g., `screenshot-map.png`, `report-sample.png`)
-- Reference them in this README using relative paths:
-  ```md
-  ![Map screenshot](docs/images/screenshot-map.png)
-  ```
+```
+Frontend/
+  src/pages/        Analyze, Community, Saved, History, About, Settings, auth pages
+  src/components/   Map panels, community, dashboard, chatbot, layout
+  src/utils/        PDF report generator, chart and map helpers, formatters
+  src/config/       API base URLs
+Backend/
+  src/routes/       Express routers
+  src/controllers/  Request handlers
+  src/models/       Knex data access
+  src/validations/  Joi schemas
+  src/middleware/   Auth, upload, validation
+  tests/            End-to-end check scripts
+chat-Bot/           Gemini-based GIS assistant
+```
 
-## Contributing
+## Team
 
-- Open an issue or PR for changes.
-- Follow existing JS/React style and run linters/tests before committing.
-
-## License
-
-Specify project license here (e.g., MIT) or include a `LICENSE` file at repository root.
-
-## Contact
-
-Project owner: nourokbi1@gmail.com
-
----
-
-## Contributors
-
-These contributors were detected from the git history. If you'd like to add or correct names, tell me and I'll update this list.
-
-- Nour Okbi [nourokbi](https://github.com/nourokbi)
-- Mohamed Sultan (GitHub: Salt73)
-- Marwan El-Mehy (GitHub: marwanelmehy422-gif)
-
-If you'd like, I can:
-
-- Add example images into `docs/images/` (please provide screenshots),
-- Expand README with architecture diagrams, or
-- Generate a `docs/` site using a simple static generator.
+- Nour Okbi ([@nourokbi](https://github.com/nourokbi))
+- Mohamed Sultan ([@Salt73](https://github.com/Salt73))
+- Marwan El-Mehy ([@marwanelmehy422-gif](https://github.com/marwanelmehy422-gif))
